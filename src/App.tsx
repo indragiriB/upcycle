@@ -31,6 +31,7 @@ import { StockPage as BsiStockPage } from '@/pages/bsi/StockPage';
 import { BsiOrdersPage } from '@/pages/bsi/OrdersPage';
 import { PengepulStockPage } from '@/pages/pengepul/StockCatalogPage';
 import { PengepulOrdersPage } from '@/pages/pengepul/OrdersPage';
+import { MarketplacePage } from '@/pages/MarketplacePage';
 
 export default function App() {
   if (!isSupabaseConfigured) {
@@ -193,6 +194,23 @@ export default function App() {
             element={
               <RoleGate path="/pengepul/kas">
                 <CashBookPage variant="pengepul" />
+              </RoleGate>
+            }
+          />
+
+          <Route
+            path="/marketplace"
+            element={
+              <RoleGate path="/marketplace">
+                <MarketplacePage />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/pembeli/katalog"
+            element={
+              <RoleGate path="/marketplace">
+                <MarketplacePage />
               </RoleGate>
             }
           />

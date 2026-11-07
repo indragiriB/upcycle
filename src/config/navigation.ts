@@ -61,7 +61,7 @@ export const NAVIGATION: Record<AppRole, AppNavItem[]> = {
   ],
   pembeli: [
     { label: 'Dashboard', shortLabel: 'Beranda', to: '/dashboard', icon: LayoutGrid, end: true },
-    { label: 'Katalog', shortLabel: 'Katalog', to: '/pembeli/katalog', icon: Store },
+    { label: 'Marketplace', shortLabel: 'Market', to: '/marketplace', icon: Store },
     { label: 'Pesanan saya', shortLabel: 'Pesanan', to: '/pembeli/pesanan', icon: ShoppingBag },
   ],
   admin: [
@@ -76,7 +76,7 @@ export const PRIMARY_ACTIONS: Record<AppRole, PrimaryAction> = {
   bsu: { label: 'Buka antrean', to: '/bsu/setoran', icon: Inbox },
   bsi: { label: 'Lihat data masuk', to: '/bsi/setoran', icon: Inbox },
   pengepul: { label: 'Jelajahi stok', to: '/pengepul/stok', icon: Warehouse },
-  pembeli: { label: 'Jelajahi katalog', to: '/pembeli/katalog', icon: Store },
+  pembeli: { label: 'Jelajahi marketplace', to: '/marketplace', icon: Store },
   admin: { label: 'Verifikasi organisasi', to: '/admin/organisasi', icon: BadgeCheck },
 };
 
@@ -93,22 +93,10 @@ export const UPCOMING_PAGE_META: Record<string, UpcomingPageMeta> = {
       'Kelola produk daur ulang yang dijual di marketplace UPCYCLE.',
     stage: 'Tahap 5',
   },
-  '/pembeli/katalog': {
-    title: 'Katalog produk',
-    description:
-      'Belanja produk daur ulang dari warga dan pengepul terverifikasi.',
-    stage: 'Tahap 5',
-  },
   '/pembeli/pesanan': {
     title: 'Pesanan saya',
     description:
       'Pantau pesanan marketplace, pembayaran, dan status pengiriman.',
-    stage: 'Tahap 5',
-  },
-  '/marketplace': {
-    title: 'Marketplace UPCYCLE',
-    description:
-      'Jelajahi produk daur ulang sekaligus mendukung karya warga dan pengepul.',
     stage: 'Tahap 5',
   },
   '/admin/jenis-sampah': {
@@ -126,6 +114,9 @@ export const UPCOMING_PAGE_META: Record<string, UpcomingPageMeta> = {
 };
 
 export function getAllowedRolesForPath(path: string): AppRole[] {
+  if (path === '/marketplace') {
+    return ['warga', 'bsu', 'bsi', 'pengepul', 'pembeli', 'admin'];
+  }
   return (Object.keys(NAVIGATION) as AppRole[]).filter((role) =>
     NAVIGATION[role].some((item) => item.to === path),
   );
