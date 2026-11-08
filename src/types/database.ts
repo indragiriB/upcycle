@@ -61,6 +61,14 @@ export interface OrganizationSummary {
   created_at: string;
 }
 
+export interface OrganizationAdminRecord extends OrganizationSummary {
+  slug: string | null;
+  email: string | null;
+  verified_at: string | null;
+  verified_by: string | null;
+  updated_at: string;
+}
+
 export interface ProfileWithOrganization extends Profile {
   organizations: OrganizationSummary | null;
 }
@@ -333,6 +341,83 @@ export interface StockOrder {
   pengepul?: OrganizationBrief | null;
   order_items?: OrderItemRecord[];
   pickups?: PickupRecord[];
+}
+
+export type ProductStatus = 'aktif' | 'nonaktif';
+export type ProductOrderStatus =
+  | 'menunggu_pembayaran'
+  | 'dibayar'
+  | 'dikirim'
+  | 'selesai'
+  | 'dibatalkan';
+
+export interface ProductRecord {
+  id: string;
+  penjual_id: string;
+  penjual_org_id: string | null;
+  nama: string;
+  deskripsi: string | null;
+  kategori: string | null;
+  harga: number;
+  stok: number;
+  satuan: string;
+  foto_urls: string[];
+  status: ProductStatus;
+  created_at: string;
+  updated_at: string;
+  penjual?: {
+    id: string;
+    nama: string;
+    role: AppRole;
+    avatar_url: string | null;
+  } | null;
+  org?: {
+    id: string;
+    nama: string;
+    kota: string | null;
+  } | null;
+}
+
+export interface ProductOrderItemRecord {
+  id: string;
+  order_id: string;
+  product_id: string;
+  nama_produk: string;
+  harga_satuan: number;
+  jumlah: number;
+  subtotal: number;
+  created_at: string;
+  products?: { foto_urls: string[] } | null;
+}
+
+export interface ProductOrderParty {
+  nama: string;
+  alamat?: string | null;
+  kota?: string | null;
+  telepon?: string | null;
+}
+
+export interface ProductOrderRecord {
+  id: string;
+  nomor: string;
+  pembeli_id: string;
+  penjual_id: string;
+  penjual_org_id: string | null;
+  status: ProductOrderStatus;
+  subtotal: number;
+  total: number;
+  metode_bayar: PaymentMethod | null;
+  nomor_wa: string;
+  alamat: string;
+  catatan: string | null;
+  dibayar_at: string | null;
+  selesai_at: string | null;
+  created_at: string;
+  updated_at: string;
+  pembeli?: { nama: string } | null;
+  penjual?: { nama: string; role: AppRole } | null;
+  penjual_org?: ProductOrderParty | null;
+  product_order_items?: ProductOrderItemRecord[];
 }
 
 export type StatFormat = 'number' | 'currency' | 'weight';

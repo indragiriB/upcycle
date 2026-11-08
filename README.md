@@ -3,12 +3,13 @@
 Platform bank sampah dan commerce daur ulang untuk warga, BSU, BSI, pengepul,
 pembeli, dan admin.
 
-Aplikasi dibangun bertahap. **Tahap 1 (database + RLS)**, **Tahap 2
-(fondasi frontend, autentikasi, profil, layout, dashboard)**, **Tahap 3
-(setoran warga, antrean BSU, timbang/bayar, harga, jadwal jemput, buku kas
-BSU)**, dan **Tahap 4 (data masuk BSI, stok gabungan, harga jual, pesanan,
-pengambilan, buku kas BSI & pengepul)** sudah selesai. Marketplace dan admin
-akan menyusul pada tahap 5–6.
+Aplikasi dibangun bertahap. Seluruh enam tahap sudah selesai: **Tahap 1
+(database + RLS)**, **Tahap 2 (fondasi frontend, autentikasi, profil, layout,
+dashboard)**, **Tahap 3 (setoran warga, antrean BSU, timbang/bayar, harga,
+jadwal jemput, buku kas BSU)**, **Tahap 4 (data masuk BSI, stok gabungan,
+harga jual, pesanan, pengambilan, buku kas BSI & pengepul)**, **Tahap 5
+(marketplace produk daur ulang)**, dan **Tahap 6 (master jenis sampah &
+verifikasi organisasi)**.
 
 ## Stack
 
@@ -38,8 +39,8 @@ akan menyusul pada tahap 5–6.
   - aktivitas terbaru, aksi cepat sesuai peran, dan daftar mitra.
 - Empty state, loading skeleton, dan error state yang jelas untuk data kosong
   atau koneksi bermasalah.
-- Halaman placeholder berperan untuk semua rute tahap 5–6, sehingga navigasi
-  sudah bisa diuji tanpa tautan mati.
+- Seluruh rute tahap 1–6 sudah memakai halaman nyata; tidak ada tautan
+  placeholder yang tersisa.
 
 ## Yang sudah tersedia di Tahap 3
 
@@ -103,6 +104,53 @@ akan menyusul pada tahap 5–6.
   - Notifikasi pesanan, pembayaran, jadwal pengambilan, dan penyelesaian
     mengarah ke halaman pesanan/jemput yang sesuai.
 
+## Yang sudah tersedia di Tahap 5
+
+- **Penjual (warga & pengepul)**
+  - Halaman **Produk saya** di `/warga/produk` dan **Produk pengepul** di
+    `/pengepul/produk` dengan tab Produk dan Pesanan masuk.
+  - Tambah/ubah produk, unggah satu foto ke bucket publik `product-images`,
+    atur kategori, harga kelipatan Rp100, stok, satuan, dan status aktif.
+  - Produk nonaktif tetap tersimpan untuk riwayat tetapi tidak tampil di
+    katalog.
+  - Proses pesanan masuk: tandai sudah dikirim, batalkan pesanan yang belum
+    dikirim, dan hubungi pembeli lewat WhatsApp.
+- **Pembeli & marketplace**
+  - Katalog nyata di `/pembeli/katalog` dan `/marketplace` dengan pencarian,
+    filter kategori, harga, stok, serta identitas penjual warga/pengepul.
+  - Pembuatan pesanan mengunci dan mengurangi stok saat itu juga. Satu pesanan
+    hanya boleh berisi produk dari satu penjual.
+  - Status pesanan: `menunggu_pembayaran` → `dibayar` → `dikirim` → `selesai`,
+    dengan pembatalan sebelum pengiriman.
+  - Pembeli dapat membayar (tunai/transfer), membatalkan pesanan yang belum
+    dibayar, dan mengonfirmasi penerimaan barang.
+- **Kas otomatis & notifikasi**
+  - Penjual pengepul menerima kas masuk `penjualan_produk` saat pembayaran.
+    Pembatalan pesanan yang sudah dibayar menulis kas keluar `koreksi`.
+  - Warga penjual tidak memiliki buku kas organisasi; transaksi tetap tercatat
+    pada pesanan.
+  - Notifikasi pesanan baru, pembayaran, pengiriman, pembatalan, dan
+    penyelesaian mengarah ke halaman produk/pesanan yang sesuai.
+- Seluruh mutasi memakai RPC `create_product_order`, `pay_product_order`,
+  `ship_product_order`, `complete_product_order`, dan `cancel_product_order`.
+
+## Yang sudah tersedia di Tahap 6
+
+- **Admin — master jenis sampah** (`/admin/jenis-sampah`)
+  - Tambah/ubah jenis sampah dengan nama, kode unik, kategori, deskripsi,
+    satuan, ikon, dan warna penanda.
+  - Aktif/nonaktifkan jenis sampah. Jenis nonaktif tidak muncul pada pilihan
+    baru tetapi tetap tersedia untuk riwayat transaksi lama.
+  - Pencarian, filter status, kartu statistik, serta empty/loading/error state.
+- **Admin — verifikasi organisasi** (`/admin/organisasi`)
+  - Daftar BSU, BSI, dan pengepul dengan filter status/tipe dan pencarian.
+  - Tinjau alamat, kontak, titik lokasi, dan tanggal pendaftaran.
+  - Verifikasi, tolak, atau cabut verifikasi. Verifikasi mencatat `verified_at`
+    dan `verified_by`; organisasi terverifikasi dapat dipakai pada alur
+    setoran, stok, dan marketplace.
+  - Aksi memakai policy RLS admin yang sudah ada, tanpa service-role key di
+    frontend.
+
 ## Menjalankan proyek
 
 ### 1. Prasyarat
@@ -145,7 +193,8 @@ Buka SQL Editor Supabase lalu jalankan file berikut **sesuai urutan nama**:
 8. `supabase/migrations/20261106000800_grants.sql`
 9. `supabase/migrations/20261106000900_storage.sql`
 10. `supabase/migrations/20261106001000_order_rpcs.sql`
-11. `supabase/seed.sql` (khusus database baru)
+11. `supabase/migrations/20261106001100_product_rpcs.sql`
+12. `supabase/seed.sql` (khusus database baru)
 
 Detail database, akun demo, dan keputusan RLS ada di
 [`supabase/README.md`](supabase/README.md).
@@ -201,16 +250,17 @@ mengisi email/password otomatis.
 
 | Peran | Menu utama |
 | --- | --- |
-| warga | Dashboard, Setor sampah, Harga BSU, Riwayat, Marketplace |
+| warga | Dashboard, Setor sampah, Harga BSU, Riwayat, Produk saya, Marketplace |
 | bsu | Dashboard, Antrean setoran, Jemput, Harga, Buku kas |
 | bsi | Dashboard, Data masuk, Stok, Pesanan, Buku kas |
 | pengepul | Dashboard, Stok BSI, Pesanan, Produk, Buku kas |
 | pembeli | Dashboard, Katalog, Pesanan saya |
 | admin | Dashboard, Jenis sampah, Verifikasi |
 
-Semua rute selain halaman publik dilindungi. Rute tahap 5–6 (produk pengepul,
-katalog/pesanan pembeli, marketplace, master sampah, dan verifikasi organisasi)
-masih menampilkan halaman “sedang disiapkan” dengan penjelasan tahap rilis.
+Semua rute selain halaman publik dilindungi. Rute tahap 1–6 sudah aktif:
+marketplace dapat dibuka semua peran yang login, sedangkan pengelolaan produk,
+pesanan pembeli, master jenis sampah, dan verifikasi organisasi dibatasi sesuai
+peran masing-masing.
 
 ## Struktur singkat
 
@@ -218,26 +268,32 @@ masih menampilkan halaman “sedang disiapkan” dengan penjelasan tahap rilis.
 src/
   auth/            provider sesi + profil
   components/
+    admin/         dialog jenis sampah & keputusan verifikasi organisasi
     cash/          dialog biaya operasional & koreksi kas
     dashboard/     peta, grafik, statistik, aktivitas, mitra
     deposits/      kartu setoran, dialog jadwal/timbang, rincian item
     layout/        navbar, bottom nav, notifikasi, menu profil
     orders/        kartu pesanan, rincian item, jadwal ambil, bayar/batal
     pricing/       dialog penetapan harga beli BSU & harga jual BSI
+    products/      kartu produk, form produk, dialog pesanan/bayar/batal
     ui/            tombol, input, select, textarea, modal, kartu, badge,
                    avatar, empty state, page header
-  config/          navigasi per peran + metadata halaman tahap berikutnya
+  config/          navigasi per peran
   hooks/           dashboard, organisasi, notifikasi, setoran, harga, kas,
-                   stok/data BSI, pesanan, judul
-  lib/             Supabase client, util, geo, status, helper setoran, storage
+                   stok/data BSI, pesanan stok, produk marketplace, admin
+  lib/             Supabase client, util, geo, status, helper setoran,
+                   storage avatar/produk/setoran
   pages/
     auth/          login, daftar, lupa/reset password
     warga/         form setor, harga BSU, riwayat setoran
     bsu/           antrean, jadwal jemput, harga, buku kas
     bsi/           data masuk, detail & publikasi, stok + harga jual, pesanan
     pengepul/      katalog stok, pesanan
+    pembeli/       (katalog & pesanan memakai halaman bersama di products/)
+    products/      katalog marketplace, pesanan pembeli, kelola produk penjual
+    admin/         master jenis sampah, verifikasi organisasi
     deposits/      halaman detail setoran bersama warga/BSU
-    ...            dashboard, profil, placeholder, setup, 404
+    ...            dashboard, profil, setup, 404
   routes/          guard sesi, guard peran, redirect root
   types/           tipe domain
 supabase/
@@ -345,6 +401,51 @@ supabase/
     dapat membaca tabel `deposits` mentah.
 12. Jalankan `npm run typecheck` dan `npm run build` → keduanya harus lulus.
 
+## Uji Tahap 5
+
+1. Pastikan migrasi `20261106001100_product_rpcs.sql` sudah diterapkan.
+   RPC harus tersedia di schema cache Supabase.
+2. Login sebagai `warga1@upcycle.id`, buka **Produk saya** → **Tambah produk**.
+   Isi nama, kategori, harga kelipatan Rp100, stok, satuan, dan unggah foto.
+   Pastikan produk muncul di **Marketplace**.
+3. Login sebagai `pengepul@upcycle.id`, buka **Produk**, lalu tambah produk
+   organisasi. Produk pengepul harus tampil dengan nama organisasi.
+4. Login sebagai `pembeli1@upcycle.id`, buka **Katalog**, cari produk, lalu
+   **Beli**. Isi jumlah, nomor WhatsApp, dan alamat. Pastikan stok langsung
+   berkurang dan pesanan berstatus **Menunggu pembayaran**.
+5. Coba beli melebihi stok, membeli produk sendiri, atau mencampur produk dari
+   dua penjual dalam satu pesanan → RPC harus menolak dengan pesan jelas.
+6. Dari **Pesanan saya**, bayar pesanan dengan transfer/tunai. Penjual menerima
+   notifikasi. Bila penjual adalah pengepul, kas masuk `penjualan_produk`
+   muncul di **Buku kas** organisasinya.
+7. Batalkan satu pesanan yang belum dibayar dari sisi pembeli. Pastikan stok
+   kembali ke katalog.
+8. Sebagai penjual, buka tab **Pesanan masuk**, tandai pesanan yang sudah
+   dibayar sebagai **Kirim pesanan**. Sebagai pembeli, klik **Pesanan diterima**
+   → status menjadi **Selesai**.
+9. Sebagai penjual pengepul, batalkan satu pesanan yang sudah dibayar sebelum
+   dikirim. Pastikan stok kembali dan kas keluar `koreksi` tercatat.
+10. Buka `/warga/produk` atau `/admin/jenis-sampah` sebagai pembeli → harus
+    dialihkan ke dashboard. `/marketplace` harus tetap bisa dibuka semua peran,
+    tetapi tombol beli hanya muncul untuk pembeli.
+11. Jalankan `npm run typecheck` dan `npm run build` → keduanya harus lulus.
+
+## Uji Tahap 6
+
+1. Login sebagai `admin@upcycle.id`, buka **Jenis sampah**.
+2. Tambah jenis sampah baru, lalu ubah nama/kategori/warna/ikonnya. Pastikan
+   jenis baru muncul pada pilihan harga BSU/BSI.
+3. Nonaktifkan jenis tersebut → jenis hilang dari pilihan baru, tetapi data
+   transaksi lama tetap aman. Aktifkan kembali.
+4. Buka **Verifikasi**. Coba pencarian dan filter status/tipe.
+5. Pilih salah satu organisasi terverifikasi → **Cabut verifikasi**, lalu
+   verifikasi kembali. Pastikan badge status dan tanggal verifikasi berubah.
+6. Organisasi yang berstatus ditolak harus gagal dipakai pada alur transaksi
+   baru sampai diverifikasi kembali.
+7. Buka `/admin/organisasi` sebagai warga atau pengepul → harus dialihkan ke
+   dashboard.
+8. Jalankan `npm run typecheck` dan `npm run build` → keduanya harus lulus.
+
 ## Status tahap
 
 - ✅ Tahap 1 — database, RLS, RPC inti, seed
@@ -353,8 +454,9 @@ supabase/
   kas BSU
 - ✅ Tahap 4 — data masuk BSI, stok gabungan, harga jual, pesanan, pengambilan,
   kas BSI & pengepul
-- ⬜ Tahap 5 — marketplace produk daur ulang
-- ⬜ Tahap 6 — admin master data & verifikasi
+- ✅ Tahap 5 — marketplace produk daur ulang, pesanan pembeli, kas penjualan
+  produk
+- ✅ Tahap 6 — admin master jenis sampah & verifikasi organisasi
 
 ## Troubleshooting
 
@@ -370,6 +472,15 @@ supabase/
 - **Pesanan/publikasi stok gagal** — pastikan migrasi
   `20261106001000_order_rpcs.sql` sudah diterapkan. Publikasi juga gagal bila
   harga jual BSI untuk salah satu jenis sampah belum aktif.
+- **Pesanan produk gagal dibuat** — pastikan migrasi
+  `20261106001100_product_rpcs.sql` sudah diterapkan. Hanya akun **pembeli**
+  yang dapat membuat pesanan, stok harus cukup, dan produk tidak boleh milik
+  sendiri.
+- **Foto produk gagal diunggah** — jalankan
+  `20261106000900_storage.sql`; bucket publik `product-images` harus ada dan
+  penulisan hanya di folder `{user_id}/`.
+- **Admin gagal mengubah status organisasi** — pastikan akun berperan `admin`
+  dan policy `organizations_update_admin` sudah diterapkan.
 - **Email konfirmasi tidak datang** — cek folder spam, batas rate limit email
   Supabase, dan pengaturan SMTP. Untuk pengujian, nonaktifkan konfirmasi email.
 - **Peta kosong** — pastikan organisasi seed sudah ada dan memiliki `lat`/`lng`,

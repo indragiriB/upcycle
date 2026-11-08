@@ -1,5 +1,4 @@
 import { Route, Routes } from 'react-router-dom';
-import { UPCOMING_PAGE_META } from '@/config/navigation';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { AppShell } from '@/components/layout/AppShell';
 import {
@@ -14,7 +13,6 @@ import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
 import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
 import { DashboardPage } from '@/pages/DashboardPage';
 import { ProfilePage } from '@/pages/ProfilePage';
-import { UpcomingPage } from '@/pages/UpcomingPage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { SetupRequiredPage } from '@/pages/SetupRequiredPage';
 import { DepositFormPage } from '@/pages/warga/DepositFormPage';
@@ -32,6 +30,11 @@ import { BsiOrdersPage } from '@/pages/bsi/OrdersPage';
 import { PengepulStockPage } from '@/pages/pengepul/StockCatalogPage';
 import { PengepulOrdersPage } from '@/pages/pengepul/OrdersPage';
 import { MarketplacePage } from '@/pages/MarketplacePage';
+import { ProductCatalogPage } from '@/pages/products/ProductCatalogPage';
+import { ProductManagementPage } from '@/pages/products/ProductManagementPage';
+import { BuyerOrdersPage } from '@/pages/products/BuyerOrdersPage';
+import { WasteTypesPage } from '@/pages/admin/WasteTypesPage';
+import { OrganizationVerificationPage } from '@/pages/admin/OrganizationVerificationPage';
 
 export default function App() {
   if (!isSupabaseConfigured) {
@@ -197,6 +200,23 @@ export default function App() {
               </RoleGate>
             }
           />
+          <Route
+            path="/pengepul/produk"
+            element={
+              <RoleGate path="/pengepul/produk">
+                <ProductManagementPage />
+              </RoleGate>
+            }
+          />
+
+          <Route
+            path="/warga/produk"
+            element={
+              <RoleGate path="/warga/produk">
+                <ProductManagementPage />
+              </RoleGate>
+            }
+          />
 
           <Route
             path="/marketplace"
@@ -209,23 +229,36 @@ export default function App() {
           <Route
             path="/pembeli/katalog"
             element={
-              <RoleGate path="/marketplace">
-                <MarketplacePage />
+              <RoleGate path="/pembeli/katalog">
+                <ProductCatalogPage />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/pembeli/pesanan"
+            element={
+              <RoleGate path="/pembeli/pesanan">
+                <BuyerOrdersPage />
               </RoleGate>
             }
           />
 
-          {Object.entries(UPCOMING_PAGE_META).map(([path, meta]) => (
-            <Route
-              key={path}
-              path={path}
-              element={
-                <RoleGate path={path}>
-                  <UpcomingPage path={path} meta={meta} />
-                </RoleGate>
-              }
-            />
-          ))}
+          <Route
+            path="/admin/jenis-sampah"
+            element={
+              <RoleGate path="/admin/jenis-sampah">
+                <WasteTypesPage />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/admin/organisasi"
+            element={
+              <RoleGate path="/admin/organisasi">
+                <OrganizationVerificationPage />
+              </RoleGate>
+            }
+          />
         </Route>
       </Route>
 

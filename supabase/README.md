@@ -18,7 +18,8 @@ Jalankan **berurutan** di SQL Editor Supabase (atau lewat Supabase CLI):
 | 8 | `migrations/20261106000800_grants.sql` | grant/revoke tabel, view, dan function |
 | 9 | `migrations/20261106000900_storage.sql` | bucket `avatars`, `product-images`, `deposit-photos` + policy storage |
 | 10 | `migrations/20261106001000_order_rpcs.sql` | RPC pesanan stok, pembayaran, pengambilan, kas otomatis, policy pesanan untuk BSU |
-| 11 | `seed.sql` | data contoh dan akun demo |
+| 11 | `migrations/20261106001100_product_rpcs.sql` | RPC pesanan produk marketplace, penguncian stok, kas penjualan produk, notifikasi |
+| 12 | `seed.sql` | data contoh dan akun demo |
 
 > `seed.sql` hanya untuk database baru/kosong. Menjalankannya ulang dapat
 > menabrak constraint unik akun/auth.
@@ -72,6 +73,17 @@ Organisasi contoh: **BSU Melati**, **BSU Kenanga**, **BSI Nusantara Hijau**,
   (`pengepul_ke_bsi`). Menyelesaikan pengambilan pengepul menutup pesanan dan
   menandai setoran asal `diambil_pengepul`; pengambilan BSI menandai
   `diambil_bsi`.
+- **Pesanan produk marketplace** memakai `create_product_order`: hanya pembeli,
+  satu penjual per pesanan, produk tidak boleh milik sendiri, dan stok langsung
+  dikunci/dikurangi. `pay_product_order` menulis kas masuk `penjualan_produk`
+  untuk penjual yang memiliki organisasi. Pembatalan mengembalikan stok;
+  pembatalan pesanan yang sudah dibayar menulis kas keluar `koreksi`.
+- **Master jenis sampah** dikelola admin lewat insert/update `waste_types`.
+  Jenis nonaktif tetap tersimpan untuk riwayat tetapi tidak muncul pada pilihan
+  baru.
+- **Verifikasi organisasi** memakai update langsung `organizations` oleh admin
+  (`status`, `verified_at`, `verified_by`). Alur setoran, stok, dan marketplace
+  mensyaratkan organisasi berstatus `verified`.
 - RPC inti yang tersedia:
   - `complete_deposit_weighing(...)`
   - `send_deposit_to_bsi(...)`
@@ -80,8 +92,9 @@ Organisasi contoh: **BSU Melati**, **BSU Kenanga**, **BSI Nusantara Hijau**,
   - `create_stock_order(...)`, `pay_stock_order(...)`, `cancel_stock_order(...)`
   - `schedule_order_bsu_pickup(...)`,
     `schedule_order_pengepul_pickup(...)`, `update_pickup_status(...)`
-- Checkout marketplace produk akan ditambahkan pada tahap 5. Tabel dan RLS-nya
-  sudah siap.
+  - `create_product_order(...)`, `pay_product_order(...)`,
+    `cancel_product_order(...)`, `ship_product_order(...)`,
+    `complete_product_order(...)`
 - **Storage:**
   - `avatars` — publik dibaca; tulis hanya di folder `{user_id}/`.
   - `product-images` — publik dibaca; tulis hanya di folder `{user_id}/`.
@@ -157,6 +170,52 @@ Catatan perilaku:
   dahulu, atur harga jual BSI, lalu publikasikan setoran sebelum menguji
   pesanan.
 
+## Alur Tahap 5 di aplikasi
+
+Tahap 5 menambah satu migrasi, `20261106001100_product_rpcs.sql`. UI memakai
+tabel dan RLS marketplace yang sudah ada ditambah RPC baru:
+
+| Aksi UI | Mekanisme | Batasan utama |
+| --- | --- | --- |
+| Warga/pengepul menambah produk | insert/update langsung `products` | role `warga`/`pengepul`; trigger memvalidasi org penjual; foto di `product-images` |
+| Pembeli membuat pesanan | RPC `create_product_order` | role `pembeli`; satu penjual per pesanan; stok cukup; bukan produk sendiri; penjual pengepul harus terverifikasi |
+| Pembeli membayar | RPC `pay_product_order` | pemilik pesanan; status `menunggu_pembayaran`; kas masuk `penjualan_produk` bila penjual punya organisasi |
+| Penjual mengirim | RPC `ship_product_order` | pemilik/org penjual; status `dibayar` |
+| Pembeli menyelesaikan | RPC `complete_product_order` | pemilik pesanan; status `dikirim` |
+| Membatalkan pesanan | RPC `cancel_product_order` | pembeli sebelum bayar; penjual sebelum kirim; stok dikembalikan; kas `koreksi` bila sudah dibayar dan penjual punya organisasi |
+
+Catatan perilaku:
+
+- `create_product_order` mengunci baris produk dengan `for update`, menghitung
+  total, membuat `product_order_items`, lalu mengurangi stok dalam satu
+  transaksi. Bila salah satu item gagal, seluruh pesanan dibatalkan.
+- Satu pesanan hanya boleh berisi produk dari satu penjual. UI saat ini membuat
+  satu pesanan per produk, sedangkan RPC siap menerima banyak item.
+- Penjual warga tidak memiliki `penjual_org_id`, sehingga tidak ada entri kas
+  organisasi; status pesanan tetap tercatat.
+- Notifikasi mengarah ke `/pembeli/pesanan`,
+  `/pengepul/produk?tab=pesanan`, atau `/warga/produk?tab=pesanan`.
+
+## Alur Tahap 6 di aplikasi
+
+Tahap 6 tidak menambah migrasi. Admin memakai RLS yang sudah ada:
+
+| Aksi UI | Mekanisme | Batasan utama |
+| --- | --- | --- |
+| Admin melihat semua jenis sampah | select `waste_types` | policy select terbuka untuk semua authenticated; halaman harga/stok menyaring `aktif = true`, admin melihat semua |
+| Admin menambah/mengubah jenis sampah | insert/update `waste_types` | policy `waste_types_insert_admin` / `waste_types_update_admin` |
+| Admin melihat semua organisasi | select `organizations` | policy `organizations_select` mengizinkan admin melihat status apa pun |
+| Admin memverifikasi/menolak | update `organizations` | policy `organizations_update_admin`; menulis `status`, `verified_at`, `verified_by` |
+
+Catatan perilaku:
+
+- Organisasi berstatus `verified` dapat dipakai pada alur setoran, stok BSI,
+  dan marketplace. Menolak atau mencabut verifikasi menghentikan transaksi baru
+  tanpa menghapus data lama.
+- Jenis sampah tidak dihapus dari UI; admin menonaktifkannya agar riwayat
+  setoran, harga, dan stok lama tetap valid.
+- Tidak ada service-role key di frontend; seluruh aksi admin tetap melalui RLS.
+
 ## Cek setelah migrasi
 
 Jalankan di SQL Editor:
@@ -193,11 +252,26 @@ order by proname;
 select pg_get_constraintdef(oid) as definisi
 from pg_constraint
 where conname = 'ledger_entries_kategori_check';
+
+-- RPC Tahap 5 harus ada
+select proname
+from pg_proc
+where pronamespace = 'public'::regnamespace
+  and proname in (
+    'create_product_order', 'pay_product_order', 'cancel_product_order',
+    'ship_product_order', 'complete_product_order'
+  )
+  order by proname;
+
+-- Master jenis sampah & organisasi untuk admin
+select count(*) as jenis_sampah from public.waste_types;
+select status, count(*) from public.organizations group by status order by status;
 ```
 
-Uji RLS dan alur penuh memerlukan sesi login. Aplikasi Tahap 2–4 sudah
-menyediakan login, dashboard, alur setoran, dan alur pesanan stok. Masuk
-sebagai warga lalu BSU/BSI/pengepul untuk memastikan:
+Uji RLS dan alur penuh memerlukan sesi login. Aplikasi Tahap 2–6 sudah
+menyediakan login, dashboard, alur setoran, alur pesanan stok, marketplace
+produk, serta halaman admin. Masuk sebagai warga lalu BSU/BSI/pengepul/pembeli/
+admin untuk memastikan:
 
 1. Warga dapat membuat setoran, mengunggah foto, melihat riwayat, dan
    mengonfirmasi hasil timbang hanya untuk setorannya sendiri.
@@ -218,9 +292,17 @@ sebagai warga lalu BSU/BSI/pengepul untuk memastikan:
    lain tidak dapat membaca buku kas tersebut.
 10. BSU hanya melihat ringkasan pesanan yang dijadwalkan dijemput dari BSU-nya;
     item dan alokasi lot tetap tertutup.
+11. Hanya pembeli yang dapat membuat pesanan produk; stok berkurang saat
+    pesanan dibuat dan kembali saat dibatalkan sebelum dikirim.
+12. Pembayaran produk menulis kas masuk `penjualan_produk` hanya untuk penjual
+    yang memiliki organisasi. Pembatalan setelah dibayar menulis `koreksi`.
+13. Pembeli hanya melihat pesanan miliknya; penjual/org penjual hanya melihat
+    pesanan masuknya. Warga lain tidak dapat membaca pesanan tersebut.
+14. Non-admin tidak dapat mengubah `waste_types` atau status `organizations`;
+    admin dapat memverifikasi/menolak organisasi dan mengelola master sampah.
 
 ## Catatan
 
-Panduan setup aplikasi, konfigurasi Auth, dan checklist pengujian Tahap 2–4 ada
+Panduan setup aplikasi, konfigurasi Auth, dan checklist pengujian Tahap 2–6 ada
 di [`../README.md`](../README.md). Pastikan migrasi storage juga dijalankan agar
-unggah avatar dan foto setoran berfungsi.
+unggah avatar, foto setoran, dan foto produk berfungsi.

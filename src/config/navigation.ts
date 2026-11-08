@@ -36,6 +36,7 @@ export const NAVIGATION: Record<AppRole, AppNavItem[]> = {
     { label: 'Setor sampah', shortLabel: 'Setor', to: '/warga/setor', icon: Recycle },
     { label: 'Harga BSU', shortLabel: 'Harga', to: '/warga/harga', icon: Tags },
     { label: 'Riwayat setoran', shortLabel: 'Riwayat', to: '/warga/riwayat', icon: History },
+    { label: 'Produk saya', shortLabel: 'Produk', to: '/warga/produk', icon: Package },
     { label: 'Marketplace', shortLabel: 'Market', to: '/marketplace', icon: Store },
   ],
   bsu: [
@@ -61,7 +62,7 @@ export const NAVIGATION: Record<AppRole, AppNavItem[]> = {
   ],
   pembeli: [
     { label: 'Dashboard', shortLabel: 'Beranda', to: '/dashboard', icon: LayoutGrid, end: true },
-    { label: 'Marketplace', shortLabel: 'Market', to: '/marketplace', icon: Store },
+    { label: 'Katalog', shortLabel: 'Katalog', to: '/pembeli/katalog', icon: Store },
     { label: 'Pesanan saya', shortLabel: 'Pesanan', to: '/pembeli/pesanan', icon: ShoppingBag },
   ],
   admin: [
@@ -78,39 +79,6 @@ export const PRIMARY_ACTIONS: Record<AppRole, PrimaryAction> = {
   pengepul: { label: 'Jelajahi stok', to: '/pengepul/stok', icon: Warehouse },
   pembeli: { label: 'Jelajahi marketplace', to: '/marketplace', icon: Store },
   admin: { label: 'Verifikasi organisasi', to: '/admin/organisasi', icon: BadgeCheck },
-};
-
-export interface UpcomingPageMeta {
-  title: string;
-  description: string;
-  stage: string;
-}
-
-export const UPCOMING_PAGE_META: Record<string, UpcomingPageMeta> = {
-  '/pengepul/produk': {
-    title: 'Produk pengepul',
-    description:
-      'Kelola produk daur ulang yang dijual di marketplace UPCYCLE.',
-    stage: 'Tahap 5',
-  },
-  '/pembeli/pesanan': {
-    title: 'Pesanan saya',
-    description:
-      'Pantau pesanan marketplace, pembayaran, dan status pengiriman.',
-    stage: 'Tahap 5',
-  },
-  '/admin/jenis-sampah': {
-    title: 'Master jenis sampah',
-    description:
-      'Kelola daftar jenis sampah yang bisa digunakan BSU dan BSI.',
-    stage: 'Tahap 6',
-  },
-  '/admin/organisasi': {
-    title: 'Verifikasi organisasi',
-    description:
-      'Tinjau dan verifikasi akun BSU, BSI, serta pengepul yang mendaftar.',
-    stage: 'Tahap 6',
-  },
 };
 
 export function getAllowedRolesForPath(path: string): AppRole[] {

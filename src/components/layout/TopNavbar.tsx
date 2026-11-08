@@ -28,7 +28,7 @@ export function TopNavbar({
             aria-label="Navigasi utama"
             className="hidden items-center gap-1 rounded-full bg-[#f1f4ef] p-1.5 lg:flex"
           >
-            {navItems.slice(0, 5).map((item) => {
+            {navItems.map((item) => {
               const Icon = item.icon;
               return (
                 <NavLink
