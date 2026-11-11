@@ -19,7 +19,12 @@ Jalankan **berurutan** di SQL Editor Supabase (atau lewat Supabase CLI):
 | 9 | `migrations/20261106000900_storage.sql` | bucket `avatars`, `product-images`, `deposit-photos` + policy storage |
 | 10 | `migrations/20261106001000_order_rpcs.sql` | RPC pesanan stok, pembayaran, pengambilan, kas otomatis, policy pesanan untuk BSU |
 | 11 | `migrations/20261106001100_product_rpcs.sql` | RPC pesanan produk marketplace, penguncian stok, kas penjualan produk, notifikasi |
-| 12 | `seed.sql` | data contoh dan akun demo |
+| 12 | `migrations/20261109000100_enum_industri.sql` | nilai enum `industri` untuk peran/organisasi/tipe pengambilan |
+| 13 | `migrations/20261109000200_migrate_roles.sql` | migrasi data `pembeli` → `warga`, `pengepul` → `industri`, trigger & validasi |
+| 14 | `migrations/20261109000300_marketplace_kondisi.sql` | kolom `products.kondisi` dan `product_order_items.kondisi_produk` (`bekas`/`upcycle`) |
+| 15 | `migrations/20261109000400_rls_industri.sql` | policy RLS untuk peran dan organisasi industri |
+| 16 | `migrations/20261109000500_rpc_industri.sql` | RPC pesanan/stok/produk versi peran warga & industri |
+| 17 | `seed.sql` | data contoh dan akun demo |
 
 > `seed.sql` hanya untuk database baru/kosong. Menjalankannya ulang dapat
 > menabrak constraint unik akun/auth.
@@ -36,9 +41,7 @@ Semua password: **`Upcycle123!`**
 | `bsu1@upcycle.id` | petugas BSU Melati |
 | `bsu2@upcycle.id` | petugas BSU Kenanga |
 | `bsi@upcycle.id` | petugas BSI Nusantara Hijau |
-| `pengepul@upcycle.id` | petugas CV Jaya Daur Ulang |
-| `pembeli1@upcycle.id` | pembeli |
-| `pembeli2@upcycle.id` | pembeli |
+| `industri@upcycle.id` | petugas CV Jaya Daur Ulang |
 
 Organisasi contoh: **BSU Melati**, **BSU Kenanga**, **BSI Nusantara Hijau**,
 **CV Jaya Daur Ulang**. Sudah terverifikasi.
@@ -66,18 +69,28 @@ Organisasi contoh: **BSU Melati**, **BSU Kenanga**, **BSI Nusantara Hijau**,
   belum dibayar mengembalikan stok ke lot asal.
 - **Kas pesanan** ditulis otomatis dan atomik saat pembayaran:
   `penjualan_stok` (masuk) untuk BSI dan `pembelian_stok` (keluar) untuk
-  pengepul. Kategori `pembelian_stok` ditambahkan pada
+  industri. Kategori `pembelian_stok` ditambahkan pada
   `20261106001000_order_rpcs.sql`.
 - **Pengambilan** dipisah dua fase: BSI menjadwalkan pengambilan dari tiap BSU
-  (`bsi_ke_bsu`), lalu pengepul menjadwalkan pengambilan di BSI
-  (`pengepul_ke_bsi`). Menyelesaikan pengambilan pengepul menutup pesanan dan
-  menandai setoran asal `diambil_pengepul`; pengambilan BSI menandai
-  `diambil_bsi`.
-- **Pesanan produk marketplace** memakai `create_product_order`: hanya pembeli,
+  (`bsi_ke_bsu`), lalu industri menjadwalkan pengambilan di BSI
+  (`pengepul_ke_bsi`, nama enum lama dipertahankan). Menyelesaikan pengambilan
+  industri menutup pesanan dan menandai setoran asal `diambil_pengepul`;
+  pengambilan BSI menandai `diambil_bsi`.
+- **Pesanan produk marketplace** memakai `create_product_order`: hanya warga,
   satu penjual per pesanan, produk tidak boleh milik sendiri, dan stok langsung
-  dikunci/dikurangi. `pay_product_order` menulis kas masuk `penjualan_produk`
-  untuk penjual yang memiliki organisasi. Pembatalan mengembalikan stok;
-  pembatalan pesanan yang sudah dibayar menulis kas keluar `koreksi`.
+  dikunci/dikurangi. Penjual dapat berupa warga atau industri. `pay_product_order`
+  menulis kas masuk `penjualan_produk` untuk penjual yang memiliki organisasi.
+  Pembatalan mengembalikan stok; pembatalan pesanan yang sudah dibayar menulis
+  kas keluar `koreksi`.
+- **Kondisi marketplace** disimpan di `products.kondisi` dan disalin ke
+  `product_order_items.kondisi_produk` saat pesanan dibuat. Nilai yang dipakai:
+  `upcycle` dan `bekas`. Tidak ada kategori sembako, kredit, atau cicilan.
+- **Peran lama** `pembeli` dan `pengepul` tetap ada sebagai nilai enum
+  PostgreSQL yang deprecated agar recreating enum tidak berisiko. Seluruh baris
+  dimigrasikan ke `warga`/`industri`, trigger `handle_new_user` hanya membuat
+  `warga`, dan kode aplikasi tidak lagi memakai nilai lama. Nama kolom internal
+  seperti `pembeli_id`, `pengepul_id`, `dibeli_pengepul`, dan `diambil_pengepul`
+  dipertahankan.
 - **Master jenis sampah** dikelola admin lewat insert/update `waste_types`.
   Jenis nonaktif tetap tersimpan untuk riwayat tetapi tidak muncul pada pilihan
   baru.
@@ -99,7 +112,7 @@ Organisasi contoh: **BSU Melati**, **BSU Kenanga**, **BSI Nusantara Hijau**,
   - `avatars` — publik dibaca; tulis hanya di folder `{user_id}/`.
   - `product-images` — publik dibaca; tulis hanya di folder `{user_id}/`.
   - `deposit-photos` — privat. Path `{warga_id}/{deposit_id}/{file}`; warga
-    pemilik dan BSU tujuan dapat membaca, BSI/pengepul tidak.
+    pemilik dan BSU tujuan dapat membaca, BSI/industri tidak.
   - Batas ukuran: avatar 2 MB; foto produk/setoran 5 MB. MIME hanya JPEG, PNG,
     WebP.
 
@@ -143,14 +156,14 @@ view/RLS yang sudah ada ditambah RPC baru:
 | BSI melihat item timbangan | select `deposit_items` | `is_bsi_recipient(deposit_id)` |
 | BSI mengatur harga jual | insert langsung `waste_prices` | role `bsi`, `tipe = 'jual'`, organisasi terverifikasi |
 | BSI mempublikasikan stok | RPC `publish_deposit_to_stock` | status `dikirim_ke_bsi`; harga jual aktif untuk semua item |
-| Pengepul membuat pesanan | RPC `create_stock_order` | role `pengepul`; stok cukup; alokasi FIFO; harga jual aktif |
-| Pengepul membayar | RPC `pay_stock_order` | pemilik pesanan; status `menunggu_pembayaran`; menulis kas BSI & pengepul |
-| Membatalkan pesanan | RPC `cancel_stock_order` | BSI/pengepul pemilik; hanya sebelum dibayar; stok dikembalikan |
+| Industri membuat pesanan | RPC `create_stock_order` | role `industri`; stok cukup; alokasi FIFO; harga jual aktif |
+| Industri membayar | RPC `pay_stock_order` | pemilik pesanan; status `menunggu_pembayaran`; menulis kas BSI & industri |
+| Membatalkan pesanan | RPC `cancel_stock_order` | BSI/industri pemilik; hanya sebelum dibayar; stok dikembalikan |
 | BSI menjadwalkan ambil dari BSU | RPC `schedule_order_bsu_pickup` | status `dibayar`/`diproses`; satu jadwal per BSU |
-| Pengepul menjadwalkan ambil di BSI | RPC `schedule_order_pengepul_pickup` | status `diproses` |
-| Menyelesaikan pengambilan | RPC `update_pickup_status` | BSI/BSU untuk rute `bsi_ke_bsu`; BSI/pengepul untuk rute `pengepul_ke_bsi` |
-| BSI/pengepul mencatat biaya | insert langsung `ledger_entries` | role org terkait, `arah = 'keluar'`, `kategori = 'operasional'`, tanpa ref |
-| BSI/pengepul mengoreksi kas | RPC `correct_ledger_entry` | membuat entri pembalik; entri `koreksi` tidak bisa dikoreksi ulang |
+| Industri menjadwalkan ambil di BSI | RPC `schedule_order_pengepul_pickup` | status `diproses` (nama RPC lama dipertahankan) |
+| Menyelesaikan pengambilan | RPC `update_pickup_status` | BSI/BSU untuk rute `bsi_ke_bsu`; BSI/industri untuk rute `pengepul_ke_bsi` |
+| BSI/industri mencatat biaya | insert langsung `ledger_entries` | role org terkait, `arah = 'keluar'`, `kategori = 'operasional'`, tanpa ref |
+| BSI/industri mengoreksi kas | RPC `correct_ledger_entry` | membuat entri pembalik; entri `koreksi` tidak bisa dikoreksi ulang |
 
 Catatan perilaku:
 
@@ -158,11 +171,11 @@ Catatan perilaku:
   salah satu item gagal (stok kurang/harga tidak ada), seluruh transaksi
   dibatalkan.
 - `pay_stock_order` menulis dua entri kas dalam transaksi yang sama:
-  `penjualan_stok` masuk untuk BSI dan `pembelian_stok` keluar untuk pengepul.
+  `penjualan_stok` masuk untuk BSI dan `pembelian_stok` keluar untuk industri.
 - `update_pickup_status` menstempel `diambil_bsi_at` / `diambil_pengepul_at`
-  pada setoran asal dan menutup pesanan saat pengambilan pengepul selesai.
-- Pengepul baru dapat menjadwalkan pengambilan di BSI setelah seluruh rute
-  `bsi_ke_bsu` pesanan tersebut selesai. Saat rute terakhir selesai, pengepul
+  pada setoran asal dan menutup pesanan saat pengambilan industri selesai.
+- Industri baru dapat menjadwalkan pengambilan di BSI setelah seluruh rute
+  `bsi_ke_bsu` pesanan tersebut selesai. Saat rute terakhir selesai, industri
   menerima notifikasi bahwa stok siap diambil.
 - Policy baru `orders_select_bsu_pickup` memberi BSU akses ringkasan pesanan
   yang punya jadwal pengambilan ke BSU tersebut, tanpa membuka item/alokasi.
@@ -172,29 +185,32 @@ Catatan perilaku:
 
 ## Alur Tahap 5 di aplikasi
 
-Tahap 5 menambah satu migrasi, `20261106001100_product_rpcs.sql`. UI memakai
-tabel dan RLS marketplace yang sudah ada ditambah RPC baru:
+Tahap 5 menambah migrasi `20261106001100_product_rpcs.sql`, lalu penyesuaian
+peran & marketplace menambah `20261109000300_marketplace_kondisi.sql`
+dan `20261109000500_rpc_industri.sql`. UI memakai tabel dan RLS marketplace yang
+sudah ada ditambah RPC baru:
 
 | Aksi UI | Mekanisme | Batasan utama |
 | --- | --- | --- |
-| Warga/pengepul menambah produk | insert/update langsung `products` | role `warga`/`pengepul`; trigger memvalidasi org penjual; foto di `product-images` |
-| Pembeli membuat pesanan | RPC `create_product_order` | role `pembeli`; satu penjual per pesanan; stok cukup; bukan produk sendiri; penjual pengepul harus terverifikasi |
-| Pembeli membayar | RPC `pay_product_order` | pemilik pesanan; status `menunggu_pembayaran`; kas masuk `penjualan_produk` bila penjual punya organisasi |
+| Warga/industri menambah produk | insert/update langsung `products` | role `warga`/`industri`; trigger memvalidasi org penjual; `kondisi` wajib `bekas`/`upcycle`; foto di `product-images` |
+| Warga membuat pesanan | RPC `create_product_order` | role `warga`; satu penjual per pesanan; stok cukup; bukan produk sendiri; penjual warga atau industri terverifikasi |
+| Warga membayar | RPC `pay_product_order` | pemilik pesanan; status `menunggu_pembayaran`; tunai/transfer; kas masuk `penjualan_produk` bila penjual punya organisasi |
 | Penjual mengirim | RPC `ship_product_order` | pemilik/org penjual; status `dibayar` |
-| Pembeli menyelesaikan | RPC `complete_product_order` | pemilik pesanan; status `dikirim` |
-| Membatalkan pesanan | RPC `cancel_product_order` | pembeli sebelum bayar; penjual sebelum kirim; stok dikembalikan; kas `koreksi` bila sudah dibayar dan penjual punya organisasi |
+| Warga menyelesaikan | RPC `complete_product_order` | pemilik pesanan; status `dikirim` |
+| Membatalkan pesanan | RPC `cancel_product_order` | warga sebelum bayar; penjual sebelum kirim; stok dikembalikan; kas `koreksi` bila sudah dibayar dan penjual punya organisasi |
 
 Catatan perilaku:
 
 - `create_product_order` mengunci baris produk dengan `for update`, menghitung
-  total, membuat `product_order_items`, lalu mengurangi stok dalam satu
-  transaksi. Bila salah satu item gagal, seluruh pesanan dibatalkan.
+  total, membuat `product_order_items` beserta snapshot `kondisi_produk`, lalu
+  mengurangi stok dalam satu transaksi. Bila salah satu item gagal, seluruh
+  pesanan dibatalkan.
 - Satu pesanan hanya boleh berisi produk dari satu penjual. UI saat ini membuat
   satu pesanan per produk, sedangkan RPC siap menerima banyak item.
 - Penjual warga tidak memiliki `penjual_org_id`, sehingga tidak ada entri kas
   organisasi; status pesanan tetap tercatat.
-- Notifikasi mengarah ke `/pembeli/pesanan`,
-  `/pengepul/produk?tab=pesanan`, atau `/warga/produk?tab=pesanan`.
+- Notifikasi mengarah ke `/warga/pesanan`,
+  `/industri/produk?tab=pesanan`, atau `/warga/produk?tab=pesanan`.
 
 ## Alur Tahap 6 di aplikasi
 
@@ -270,8 +286,8 @@ select status, count(*) from public.organizations group by status order by statu
 
 Uji RLS dan alur penuh memerlukan sesi login. Aplikasi Tahap 2–6 sudah
 menyediakan login, dashboard, alur setoran, alur pesanan stok, marketplace
-produk, serta halaman admin. Masuk sebagai warga lalu BSU/BSI/pengepul/pembeli/
-admin untuk memastikan:
+produk, serta halaman admin. Masuk sebagai warga lalu BSU/BSI/industri/admin
+untuk memastikan:
 
 1. Warga dapat membuat setoran, mengunggah foto, melihat riwayat, dan
    mengonfirmasi hasil timbang hanya untuk setorannya sendiri.
@@ -279,27 +295,29 @@ admin untuk memastikan:
    menimbang, dan mengirim data ke BSI.
 3. BSI tidak bisa membaca tabel `deposits` mentah, tetapi melihat data aman di
    dashboard setelah BSU mengirim data.
-4. Pengepul/pembeli hanya melihat stok gabungan, bukan detail setoran mentah.
+4. Industri/warga hanya melihat stok gabungan, bukan detail setoran mentah.
 5. Kas BSU tidak dapat dibaca atau ditulis oleh organisasi lain. Biaya
    operasional hanya bisa ditambah dengan bentuk yang diizinkan.
 6. Perubahan harga membuat baris baru; harga lama tidak berubah. Koreksi kas
    membuat entri pembalik dan tidak bisa diulang untuk entri yang sama.
 7. BSI dapat mempublikasikan setoran hanya setelah harga jual aktif; stok
    gabungan dan lot asal BSU tampil sesuai.
-8. Pengepul hanya dapat memesan stok yang tersedia; stok berkurang saat pesanan
+8. Industri hanya dapat memesan stok yang tersedia; stok berkurang saat pesanan
    dibuat dan kembali saat pesanan belum dibayar dibatalkan.
-9. Pembayaran pesanan menulis kas BSI masuk dan kas pengepul keluar. Organisasi
+9. Pembayaran pesanan menulis kas BSI masuk dan kas industri keluar. Organisasi
    lain tidak dapat membaca buku kas tersebut.
 10. BSU hanya melihat ringkasan pesanan yang dijadwalkan dijemput dari BSU-nya;
     item dan alokasi lot tetap tertutup.
-11. Hanya pembeli yang dapat membuat pesanan produk; stok berkurang saat
+11. Hanya warga yang dapat membuat pesanan produk; stok berkurang saat
     pesanan dibuat dan kembali saat dibatalkan sebelum dikirim.
 12. Pembayaran produk menulis kas masuk `penjualan_produk` hanya untuk penjual
     yang memiliki organisasi. Pembatalan setelah dibayar menulis `koreksi`.
-13. Pembeli hanya melihat pesanan miliknya; penjual/org penjual hanya melihat
+13. Warga hanya melihat pesanan miliknya; penjual/org penjual hanya melihat
     pesanan masuknya. Warga lain tidak dapat membaca pesanan tersebut.
 14. Non-admin tidak dapat mengubah `waste_types` atau status `organizations`;
     admin dapat memverifikasi/menolak organisasi dan mengelola master sampah.
+15. Nilai enum lama `pembeli`/`pengepul` tidak lagi dipakai baris profil atau
+    organisasi mana pun; registrasi baru selalu menghasilkan `warga`.
 
 ## Catatan
 

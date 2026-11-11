@@ -16,18 +16,18 @@ import {
   useUpdateProduct,
 } from '@/hooks/useProducts';
 import { uploadProductImage } from '@/lib/product-storage';
+import {
+  PRODUCT_CATEGORIES,
+  PRODUCT_CONDITION_HINTS,
+  PRODUCT_CONDITIONS,
+  PRODUCT_CONDITION_LABELS,
+} from '@/lib/products';
 import { formatCurrency } from '@/lib/utils';
-import type { ProductRecord, Profile } from '@/types/database';
-
-const KATEGORI_PRODUK = [
-  'Fashion',
-  'Dekorasi',
-  'Alat Tulis',
-  'Aksesoris',
-  'Perabot',
-  'Elektronik',
-  'Lainnya',
-];
+import type {
+  ProductCondition,
+  ProductRecord,
+  Profile,
+} from '@/types/database';
 
 export function ProductFormDialog({
   open,
@@ -42,6 +42,7 @@ export function ProductFormDialog({
 }) {
   const [nama, setNama] = useState('');
   const [kategori, setKategori] = useState('Lainnya');
+  const [kondisi, setKondisi] = useState<ProductCondition>('upcycle');
   const [deskripsi, setDeskripsi] = useState('');
   const [harga, setHarga] = useState('');
   const [stok, setStok] = useState('0');
@@ -61,6 +62,7 @@ export function ProductFormDialog({
 
     setNama(product?.nama ?? '');
     setKategori(product?.kategori ?? 'Lainnya');
+    setKondisi(product?.kondisi ?? 'upcycle');
     setDeskripsi(product?.deskripsi ?? '');
     setHarga(product ? String(product.harga) : '');
     setStok(product ? String(product.stok) : '0');
@@ -134,6 +136,7 @@ export function ProductFormDialog({
       const payload = {
         nama: nama.trim(),
         kategori,
+        kondisi,
         deskripsi: deskripsi.trim(),
         harga: hargaValue,
         stok: stokValue,
@@ -191,13 +194,28 @@ export function ProductFormDialog({
             value={kategori}
             onChange={(event) => setKategori(event.target.value)}
           >
-            {KATEGORI_PRODUK.map((item) => (
+            {PRODUCT_CATEGORIES.map((item) => (
               <option key={item} value={item}>
                 {item}
               </option>
             ))}
           </Select>
         </div>
+
+        <Select
+          label="Kondisi produk"
+          value={kondisi}
+          onChange={(event) =>
+            setKondisi(event.target.value as ProductCondition)
+          }
+          hint={PRODUCT_CONDITION_HINTS[kondisi]}
+        >
+          {PRODUCT_CONDITIONS.map((item) => (
+            <option key={item} value={item}>
+              {PRODUCT_CONDITION_LABELS[item]}
+            </option>
+          ))}
+        </Select>
 
         <Textarea
           label="Deskripsi"

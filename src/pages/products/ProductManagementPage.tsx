@@ -36,6 +36,7 @@ import { StatCard, StatCardSkeleton } from '@/components/dashboard/StatCard';
 import { ProductFormDialog } from '@/components/products/ProductFormDialog';
 import { ProductOrderCard } from '@/components/products/ProductOrderCard';
 import { CancelProductOrderDialog } from '@/components/products/CancelProductOrderDialog';
+import { PRODUCT_CONDITION_LABELS } from '@/lib/products';
 import type {
   DashboardStat,
   ProductOrderRecord,
@@ -152,7 +153,7 @@ function ProductManagementContent({
     notice: { tone: 'success' | 'error'; text: string } | null,
   ) => void;
 }) {
-  const orgId = profile.role === 'pengepul' ? profile.org_id : null;
+  const orgId = profile.role === 'industri' ? profile.org_id : null;
   const productsQuery = useSellerProducts({
     userId: profile.id,
     orgId,
@@ -261,6 +262,7 @@ function ProductManagementContent({
         nama: product.nama,
         deskripsi: product.deskripsi ?? '',
         kategori: product.kategori ?? '',
+        kondisi: product.kondisi,
         harga: product.harga,
         stok: product.stok,
         satuan: product.satuan,
@@ -294,7 +296,7 @@ function ProductManagementContent({
       await shipMutation.mutateAsync(order.id);
       setNotice({
         tone: 'success',
-        text: `Pesanan ${order.nomor} ditandai dikirim. Pembeli akan menerima notifikasi.`,
+        text: `Pesanan ${order.nomor} ditandai dikirim. Warga akan menerima notifikasi.`,
       });
     } catch (failure) {
       setNotice({
@@ -319,8 +321,8 @@ function ProductManagementContent({
     <div className="mx-auto max-w-5xl space-y-4 pb-4">
       <PageHeader
         eyebrow="Toko marketplace"
-        title={profile.role === 'pengepul' ? 'Produk pengepul' : 'Produk saya'}
-        description="Kelola produk daur ulang yang Anda jual dan proses pesanan masuk dari pembeli."
+        title={profile.role === 'industri' ? 'Produk industri' : 'Produk saya'}
+        description="Kelola barang bekas dan produk upcycle yang Anda jual serta proses pesanan masuk dari warga."
         backTo="/dashboard"
         backLabel="Kembali ke dashboard"
         actions={
@@ -405,7 +407,7 @@ function ProductManagementContent({
               onChange={(event) => setSearch(event.target.value)}
               placeholder={
                 isOrderTab
-                  ? 'Nomor pesanan, pembeli, atau produk'
+                  ? 'Nomor pesanan, warga, atau produk'
                   : 'Nama produk atau kategori'
               }
               icon={Search}
@@ -483,7 +485,7 @@ function ProductManagementContent({
             <EmptyState
               icon={ShoppingBag}
               title="Belum ada pesanan masuk"
-              description="Pesanan pembeli akan muncul di sini setelah produk Anda dipesan."
+              description="Pesanan warga akan muncul di sini setelah produk Anda dipesan."
               action={
                 <Link
                   to="/marketplace"
@@ -527,7 +529,7 @@ function ProductManagementContent({
             <EmptyState
               icon={Package}
               title="Belum ada produk"
-              description="Publikasikan produk daur ulang pertama Anda agar tampil di marketplace."
+              description="Publikasikan barang bekas atau produk upcycle pertama Anda agar tampil di marketplace."
               action={
                 <Button
                   size="sm"
@@ -595,7 +597,8 @@ function ProductManagementContent({
                             </Badge>
                           </div>
                           <p className="mt-0.5 text-[10px] text-muted">
-                            {product.kategori || 'Lainnya'} · stok{' '}
+                            {product.kategori || 'Lainnya'} ·{' '}
+                            {PRODUCT_CONDITION_LABELS[product.kondisi]} · stok{' '}
                             {product.stok} {product.satuan} ·{' '}
                             {formatDateTime(product.created_at)}
                           </p>

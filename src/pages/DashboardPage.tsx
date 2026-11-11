@@ -26,11 +26,10 @@ import type { AppRole, ChartRange } from '@/types/database';
 
 const ROLE_SUBTITLES: Record<AppRole, string> = {
   warga:
-    'Pantau setoran, pendapatan, dan dampak daur ulangmu dalam satu tampilan.',
+    'Pantau setoran, pendapatan, jualan, dan dampak daur ulangmu dalam satu tampilan.',
   bsu: 'Kelola antrean setoran, penimbangan, dan kas BSU dari satu tempat.',
-  bsi: 'Pantau data masuk, stok gabungan, dan pesanan pengepul.',
-  pengepul: 'Cek stok BSI, pembelian, dan perkembangan pesananmu.',
-  pembeli: 'Temukan produk daur ulang terbaik dan pantau pesananmu.',
+  bsi: 'Pantau data masuk, stok gabungan, dan pesanan industri.',
+  industri: 'Cek stok BSI, pembelian, dan perkembangan pesananmu.',
   admin: 'Pantau jaringan mitra, verifikasi, dan master data UPCYCLE.',
 };
 

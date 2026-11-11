@@ -54,7 +54,7 @@ function matchesFilter(order: StockOrder, filter: OrderFilter) {
   return order.status === filter;
 }
 
-export function PengepulOrdersPage() {
+export function IndustriOrdersPage() {
   const { profile } = useAuth();
   const orgId = profile?.org_id ?? null;
   const [filter, setFilter] = useState<OrderFilter>('aktif');
@@ -70,7 +70,7 @@ export function PengepulOrdersPage() {
 
   usePageTitle('Pesanan saya');
 
-  const ordersQuery = useStockOrders(orgId, 'pengepul');
+  const ordersQuery = useStockOrders(orgId, 'industri');
   const pickupMutation = useUpdatePickupStatus();
   const orders = ordersQuery.data ?? [];
 
@@ -161,14 +161,14 @@ export function PengepulOrdersPage() {
   return (
     <div className="mx-auto max-w-5xl space-y-4 pb-4">
       <PageHeader
-        eyebrow="Pesanan pengepul"
+        eyebrow="Pesanan industri"
         title="Pembelian stok saya"
         description="Bayar pesanan, atur jadwal pengambilan di BSI, dan pantau status serah terima stok."
         backTo="/dashboard"
         backLabel="Kembali ke dashboard"
         actions={
           <Link
-            to="/pengepul/stok"
+            to="/industri/stok"
             className={buttonStyles({ variant: 'secondary', size: 'sm' })}
           >
             <Warehouse className="h-3.5 w-3.5" />
@@ -297,7 +297,7 @@ export function PengepulOrdersPage() {
                 description="Pilih stok dari BSI lalu buat pesanan pertamamu."
                 action={
                   <Link
-                    to="/pengepul/stok"
+                    to="/industri/stok"
                     className={buttonStyles({ variant: 'soft', size: 'sm' })}
                   >
                     Jelajahi stok
@@ -323,7 +323,7 @@ export function PengepulOrdersPage() {
                 <OrderCard
                   key={order.id}
                   order={order}
-                  viewer="pengepul"
+                  viewer="industri"
                   onPay={setPayOrder}
                   onCancel={setCancelOrder}
                   onSchedulePickup={setScheduleOrder}
@@ -359,7 +359,7 @@ export function PengepulOrdersPage() {
         open={Boolean(scheduleOrder)}
         onClose={() => setScheduleOrder(null)}
         order={scheduleOrder}
-        side="pengepul"
+        side="industri"
       />
     </div>
   );

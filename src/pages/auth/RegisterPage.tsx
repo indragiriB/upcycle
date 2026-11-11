@@ -2,42 +2,21 @@ import { useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
   AlertCircle,
-  CheckCircle2,
   Eye,
   EyeOff,
   Info,
   LockKeyhole,
   Mail,
   MailCheck,
-  Recycle,
   ShieldCheck,
-  ShoppingBag,
   UserRound,
 } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
 import { authErrorMessage } from '@/lib/auth-errors';
 import { supabase } from '@/lib/supabase';
-import { cn } from '@/lib/utils';
 import { AuthLayout } from '@/pages/auth/AuthLayout';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
-
-type AccountType = 'warga' | 'pembeli';
-
-const ACCOUNT_TYPES = [
-  {
-    value: 'warga' as const,
-    title: 'Warga',
-    description: 'Setor sampah, pantau pembayaran, dan jual hasil kreatif.',
-    icon: Recycle,
-  },
-  {
-    value: 'pembeli' as const,
-    title: 'Pembeli',
-    description: 'Belanja produk daur ulang dari mitra terverifikasi.',
-    icon: ShoppingBag,
-  },
-];
 
 export function RegisterPage() {
   const { signUp } = useAuth();
@@ -46,7 +25,6 @@ export function RegisterPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
-  const [accountType, setAccountType] = useState<AccountType>('warga');
   const [terms, setTerms] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -87,7 +65,6 @@ export function RegisterPage() {
       nama,
       email,
       password,
-      accountType,
     });
 
     if (result.error) {
@@ -185,7 +162,7 @@ export function RegisterPage() {
   return (
     <AuthLayout
       title="Buat akun UPCYCLE"
-      description="Mulai dari peran warga atau pembeli. Peran mitra ditetapkan admin setelah verifikasi."
+      description="Buat akun warga untuk setor sampah, belanja, dan berjualan di marketplace. Peran mitra ditetapkan admin setelah verifikasi."
       footer={
         <>
           Sudah punya akun?{' '}
@@ -270,58 +247,10 @@ export function RegisterPage() {
           />
         </div>
 
-        <div>
-          <p className="mb-2 text-[13px] font-semibold text-ink">
-            Daftar sebagai
-          </p>
-          <div className="grid gap-2 sm:grid-cols-2">
-            {ACCOUNT_TYPES.map((type) => {
-              const Icon = type.icon;
-              const selected = accountType === type.value;
-              return (
-                <button
-                  key={type.value}
-                  type="button"
-                  onClick={() => setAccountType(type.value)}
-                  aria-pressed={selected}
-                  className={cn(
-                    'relative rounded-2xl border p-3.5 text-left transition-all',
-                    selected
-                      ? 'border-brand-500 bg-brand-50/70 ring-4 ring-brand-500/10'
-                      : 'border-black/[0.07] bg-[#fafbf8] hover:border-black/15 hover:bg-white',
-                  )}
-                >
-                  <div className="flex items-center justify-between gap-2">
-                    <span
-                      className={cn(
-                        'flex h-8 w-8 items-center justify-center rounded-xl',
-                        selected
-                          ? 'bg-brand-600 text-white'
-                          : 'bg-white text-brand-700 ring-1 ring-black/[0.04]',
-                      )}
-                    >
-                      <Icon className="h-4 w-4" />
-                    </span>
-                    {selected && (
-                      <CheckCircle2 className="h-4 w-4 text-brand-600" />
-                    )}
-                  </div>
-                  <p className="mt-2 text-[13px] font-bold text-ink">
-                    {type.title}
-                  </p>
-                  <p className="mt-0.5 text-[10px] leading-4 text-muted">
-                    {type.description}
-                  </p>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         <div className="flex items-start gap-2.5 rounded-2xl bg-[#f5f7f3] px-4 py-3 text-[11px] leading-5 text-muted">
           <ShieldCheck className="mt-0.5 h-4 w-4 shrink-0 text-brand-600" />
           <p>
-            Akun BSU, BSI, dan pengepul hanya dibuat oleh admin melalui proses
+            Akun BSU, BSI, dan industri hanya dibuat oleh admin melalui proses
             verifikasi organisasi.
           </p>
         </div>

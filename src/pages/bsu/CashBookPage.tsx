@@ -36,7 +36,7 @@ import type {
   LedgerEntry,
 } from '@/types/database';
 
-export type CashBookVariant = 'bsu' | 'bsi' | 'pengepul';
+export type CashBookVariant = 'bsu' | 'bsi' | 'industri';
 
 type DirectionFilter = 'semua' | 'masuk' | 'keluar';
 
@@ -89,11 +89,11 @@ const CASH_COPY: Record<
     eyebrow: 'Buku kas BSI',
     title: 'Kas & pengeluaran BSI',
     description:
-      'Pantau kas masuk dari penjualan stok ke pengepul, biaya operasional, dan saldo kas BSI. Setiap entri bersifat append-only dan dapat dikoreksi dengan entri pembalik.',
-    info: 'Pembayaran pesanan stok dari pengepul otomatis tercatat sebagai kas masuk BSI. Biaya operasional BSI dapat dicatat kapan saja. Entri tidak dapat dihapus—gunakan tombol koreksi bila ada kesalahan.',
+      'Pantau kas masuk dari penjualan stok ke industri, biaya operasional, dan saldo kas BSI. Setiap entri bersifat append-only dan dapat dikoreksi dengan entri pembalik.',
+    info: 'Pembayaran pesanan stok dari industri otomatis tercatat sebagai kas masuk BSI. Biaya operasional BSI dapat dicatat kapan saja. Entri tidak dapat dihapus—gunakan tombol koreksi bila ada kesalahan.',
     emptyTitle: 'Belum ada transaksi kas',
     emptyDescription:
-      'Kas masuk akan tercatat otomatis saat pengepul membayar pesanan stok. Biaya operasional bisa kamu catat sekarang.',
+      'Kas masuk akan tercatat otomatis saat industri membayar pesanan stok. Biaya operasional bisa kamu catat sekarang.',
     emptyAction: 'Catat biaya operasional',
     orgLabel: 'BSI',
     masukHint: 'Penjualan stok & pemasukan',
@@ -101,21 +101,21 @@ const CASH_COPY: Record<
     secondaryLink: { to: '/bsi/pesanan', label: 'Pesanan stok' },
     orderLinkLabel: 'Lihat pesanan',
   },
-  pengepul: {
-    pageTitle: 'Buku kas pengepul',
-    eyebrow: 'Buku kas pengepul',
-    title: 'Kas & pengeluaran pengepul',
+  industri: {
+    pageTitle: 'Buku kas industri',
+    eyebrow: 'Buku kas industri',
+    title: 'Kas & pengeluaran industri',
     description:
-      'Pantau kas keluar untuk pembelian stok BSI, biaya operasional, dan saldo kas pengepul. Setiap entri bersifat append-only dan dapat dikoreksi dengan entri pembalik.',
-    info: 'Pembayaran pesanan stok ke BSI otomatis tercatat sebagai kas keluar pengepul. Pendapatan penjualan produk pada tahap berikutnya juga akan masuk ke buku kas ini. Entri tidak dapat dihapus—gunakan tombol koreksi bila ada kesalahan.',
+      'Pantau kas keluar untuk pembelian stok BSI, biaya operasional, dan saldo kas industri. Setiap entri bersifat append-only dan dapat dikoreksi dengan entri pembalik.',
+    info: 'Pembayaran pesanan stok ke BSI otomatis tercatat sebagai kas keluar industri. Pendapatan penjualan produk pada tahap berikutnya juga akan masuk ke buku kas ini. Entri tidak dapat dihapus—gunakan tombol koreksi bila ada kesalahan.',
     emptyTitle: 'Belum ada transaksi kas',
     emptyDescription:
       'Kas keluar akan tercatat otomatis saat kamu membayar pesanan stok BSI. Biaya operasional bisa kamu catat sekarang.',
     emptyAction: 'Catat biaya operasional',
-    orgLabel: 'pengepul',
+    orgLabel: 'industri',
     masukHint: 'Penjualan produk & pemasukan',
     keluarHint: 'Pembelian stok & operasional',
-    secondaryLink: { to: '/pengepul/pesanan', label: 'Pesanan saya' },
+    secondaryLink: { to: '/industri/pesanan', label: 'Pesanan saya' },
     orderLinkLabel: 'Lihat pesanan',
   },
 };

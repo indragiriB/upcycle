@@ -20,8 +20,7 @@ const DEMO_ACCOUNTS = [
   { label: 'Warga', email: 'warga1@upcycle.id' },
   { label: 'BSU', email: 'bsu1@upcycle.id' },
   { label: 'BSI', email: 'bsi@upcycle.id' },
-  { label: 'Pengepul', email: 'pengepul@upcycle.id' },
-  { label: 'Pembeli', email: 'pembeli1@upcycle.id' },
+  { label: 'Industri', email: 'industri@upcycle.id' },
   { label: 'Admin', email: 'admin@upcycle.id' },
 ];
 

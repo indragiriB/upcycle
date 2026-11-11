@@ -19,7 +19,7 @@ export function ScheduleOrderPickupDialog({
   open: boolean;
   onClose: () => void;
   order: StockOrder | null;
-  side: 'bsi' | 'pengepul';
+  side: 'bsi' | 'industri';
 }) {
   const [jadwal, setJadwal] = useState(toLocalDateTimeInput());
   const [error, setError] = useState<string | null>(null);
@@ -131,8 +131,8 @@ export function ScheduleOrderPickupDialog({
         <p className="flex items-start gap-2 rounded-2xl bg-brand-50 px-4 py-3 text-[10px] leading-5 text-brand-900">
           <Truck className="mt-0.5 h-3.5 w-3.5 shrink-0" />
           {fromBsu
-            ? 'Stok yang sudah diambil dari BSU ditandai “diambil BSI”. Setelah itu pengepul dapat menjadwalkan pengambilan di lokasi BSI.'
-            : 'Setelah pengambilan selesai, pesanan otomatis ditutup dan setoran asal ditandai “diambil pengepul”.'}
+            ? 'Stok yang sudah diambil dari BSU ditandai “diambil BSI”. Setelah itu industri dapat menjadwalkan pengambilan di lokasi BSI.'
+            : 'Setelah pengambilan selesai, pesanan otomatis ditutup dan setoran asal ditandai “diambil industri”.'}
         </p>
 
         {error && (

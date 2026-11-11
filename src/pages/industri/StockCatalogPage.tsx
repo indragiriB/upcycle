@@ -42,7 +42,7 @@ interface StockGroup {
   pricedRows: number;
 }
 
-export function PengepulStockPage() {
+export function IndustriStockPage() {
   const { profile } = useAuth();
   const [search, setSearch] = useState('');
   const [kategori, setKategori] = useState('semua');
@@ -157,7 +157,7 @@ export function PengepulStockPage() {
         backLabel="Kembali ke dashboard"
         actions={
           <Link
-            to="/pengepul/pesanan"
+            to="/industri/pesanan"
             className={buttonStyles({ variant: 'secondary', size: 'sm' })}
           >
             Pesanan saya
@@ -172,7 +172,7 @@ export function PengepulStockPage() {
             <CheckCircle2 className="mt-0.5 h-4 w-4 shrink-0" />
             Pesanan {created.nomor} berhasil dibuat. Stok sudah dikunci untukmu.
             <Link
-              to="/pengepul/pesanan"
+              to="/industri/pesanan"
               className="font-bold underline underline-offset-2"
             >
               Bayar sekarang

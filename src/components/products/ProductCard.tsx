@@ -1,6 +1,7 @@
 import { BadgeCheck, Package, ShoppingBag, Store } from 'lucide-react';
 import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
+import { PRODUCT_CONDITION_LABELS } from '@/lib/products';
 import { formatCurrency } from '@/lib/utils';
 import type { ProductRecord } from '@/types/database';
 
@@ -15,7 +16,7 @@ export function ProductCard({
 }) {
   const image = product.foto_urls[0] ?? null;
   const sellerName = product.org?.nama ?? product.penjual?.nama ?? 'Penjual';
-  const sellerLabel = product.org ? 'Pengepul' : 'Warga';
+  const sellerLabel = product.org ? 'Industri' : 'Warga';
   const soldOut = product.stok <= 0;
 
   return (
@@ -39,6 +40,12 @@ export function ProductCard({
         <div className="absolute left-3 top-3 flex flex-wrap gap-1.5">
           <Badge tone="white" className="px-2.5 py-1 text-[10px]">
             {product.kategori || 'Lainnya'}
+          </Badge>
+          <Badge
+            tone={product.kondisi === 'upcycle' ? 'green' : 'neutral'}
+            className="px-2.5 py-1 text-[10px]"
+          >
+            {PRODUCT_CONDITION_LABELS[product.kondisi]}
           </Badge>
           {soldOut && (
             <Badge tone="red" className="px-2.5 py-1 text-[10px]">
@@ -94,7 +101,7 @@ export function ProductCard({
             </Button>
           ) : (
             <Badge tone="neutral" className="px-2.5 py-1 text-[9px]">
-              Khusus pembeli
+              Khusus warga
             </Badge>
           )}
         </div>

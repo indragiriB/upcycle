@@ -1,15 +1,15 @@
 # UPCYCLE
 
-Platform bank sampah dan commerce daur ulang untuk warga, BSU, BSI, pengepul,
-pembeli, dan admin.
+Platform bank sampah dan commerce guna ulang untuk warga, BSU, BSI, industri,
+dan admin.
 
 Aplikasi dibangun bertahap. Seluruh enam tahap sudah selesai: **Tahap 1
 (database + RLS)**, **Tahap 2 (fondasi frontend, autentikasi, profil, layout,
 dashboard)**, **Tahap 3 (setoran warga, antrean BSU, timbang/bayar, harga,
 jadwal jemput, buku kas BSU)**, **Tahap 4 (data masuk BSI, stok gabungan,
-harga jual, pesanan, pengambilan, buku kas BSI & pengepul)**, **Tahap 5
-(marketplace produk daur ulang)**, dan **Tahap 6 (master jenis sampah &
-verifikasi organisasi)**.
+harga jual, pesanan, pengambilan, buku kas BSI & industri)**, **Tahap 5
+(marketplace barang bekas & produk upcycle)**, dan **Tahap 6 (master jenis
+sampah & verifikasi organisasi)**.
 
 ## Stack
 
@@ -23,15 +23,15 @@ verifikasi organisasi)**.
 
 ## Yang sudah tersedia di Tahap 2
 
-- Registrasi dan login Supabase; pendaftaran mandiri hanya untuk peran
-  **warga** dan **pembeli**.
+- Registrasi dan login Supabase; pendaftaran mandiri hanya membuat peran
+  **warga**. Warga dapat menyetor sampah, membeli, dan berjualan.
 - Pemulihan password lewat email (lupa password + halaman atur ulang).
 - Profil dengan nama, foto avatar di Supabase Storage, status email, peran, dan
   organisasi.
 - Layout responsif: navbar desktop dengan icon pill, popover notifikasi, menu
   profil, dan bottom tab mobile.
-- Navigasi serta proteksi rute sesuai peran (`warga`, `bsu`, `bsi`, `pengepul`,
-  `pembeli`, `admin`).
+- Navigasi serta proteksi rute sesuai peran (`warga`, `bsu`, `bsi`, `industri`,
+  `admin`).
 - Dashboard berbasis data Supabase:
   - peta gelap Esri Dark Gray Canvas dengan pin putih/hijau;
   - pencarian, urutan terdekat/nama/terbaru, zoom, lokasi saya, dan fullscreen;
@@ -80,11 +80,11 @@ verifikasi organisasi)**.
     Publikasi mensyaratkan harga jual aktif untuk setiap jenis sampah.
   - Stok gabungan per jenis sampah, daftar lot beserta BSU asal dan setoran
     sumbernya, serta pengelolaan harga jual append-only.
-  - Pesanan pengepul: pembatalan pesanan yang belum dibayar, penjadwalan
+  - Pesanan industri: pembatalan pesanan yang belum dibayar, penjadwalan
     pengambilan stok dari setiap BSU asal, dan penyelesaian pengambilan.
   - Buku kas BSI: kas masuk penjualan stok otomatis, biaya operasional, dan
     koreksi entri.
-- **Pengepul**
+- **Industri**
   - Katalog stok lintas BSI dengan pencarian, filter kategori, harga jual, dan
     estimasi nilai stok.
   - Pembuatan pesanan stok dengan alokasi FIFO dari lot tertua. Stok langsung
@@ -92,7 +92,7 @@ verifikasi organisasi)**.
     dibatalkan dan stoknya dikembalikan.
   - Pembayaran tunai/transfer, penjadwalan pengambilan di lokasi BSI, dan
     penyelesaian serah terima stok.
-  - Buku kas pengepul: kas keluar pembelian stok otomatis, biaya operasional,
+  - Buku kas industri: kas keluar pembelian stok otomatis, biaya operasional,
     dan koreksi entri.
 - **BSU**
   - Halaman **Jemput** kini juga menampilkan rute pengambilan stok pesanan oleh
@@ -100,32 +100,37 @@ verifikasi organisasi)**.
     “diambil BSI”.
 - **Kas otomatis & notifikasi**
   - Pembayaran pesanan menulis kas masuk `penjualan_stok` untuk BSI dan kas
-    keluar `pembelian_stok` untuk pengepul dalam transaksi yang sama.
+    keluar `pembelian_stok` untuk industri dalam transaksi yang sama.
   - Notifikasi pesanan, pembayaran, jadwal pengambilan, dan penyelesaian
     mengarah ke halaman pesanan/jemput yang sesuai.
 
 ## Yang sudah tersedia di Tahap 5
 
-- **Penjual (warga & pengepul)**
-  - Halaman **Produk saya** di `/warga/produk` dan **Produk pengepul** di
-    `/pengepul/produk` dengan tab Produk dan Pesanan masuk.
+- **Penjual (warga & industri)**
+  - Halaman **Produk saya** di `/warga/produk` dan **Produk industri** di
+    `/industri/produk` dengan tab Produk dan Pesanan masuk.
   - Tambah/ubah produk, unggah satu foto ke bucket publik `product-images`,
-    atur kategori, harga kelipatan Rp100, stok, satuan, dan status aktif.
+    atur kategori, kondisi (`upcycle`/`bekas`), harga kelipatan Rp100, stok,
+    satuan, dan status aktif.
   - Produk nonaktif tetap tersimpan untuk riwayat tetapi tidak tampil di
     katalog.
   - Proses pesanan masuk: tandai sudah dikirim, batalkan pesanan yang belum
-    dikirim, dan hubungi pembeli lewat WhatsApp.
-- **Pembeli & marketplace**
-  - Katalog nyata di `/pembeli/katalog` dan `/marketplace` dengan pencarian,
-    filter kategori, harga, stok, serta identitas penjual warga/pengepul.
+    dikirim, dan hubungi warga lewat WhatsApp.
+- **Warga & marketplace**
+  - Marketplace di `/marketplace` berisi barang **bekas** dan produk
+    **upcycle** dari warga dan industri. Tersedia pencarian, filter kategori,
+    filter kondisi, harga, stok, serta identitas penjual.
+  - Hanya warga yang dapat membuat pesanan produk; peran lain hanya melihat
+    katalog. Warga tetap dapat berjualan di halaman produk miliknya.
   - Pembuatan pesanan mengunci dan mengurangi stok saat itu juga. Satu pesanan
-    hanya boleh berisi produk dari satu penjual.
+    hanya boleh berisi produk dari satu penjual. Tidak ada skema kredit atau
+    cicilan; pembayaran hanya tunai atau transfer.
   - Status pesanan: `menunggu_pembayaran` → `dibayar` → `dikirim` → `selesai`,
     dengan pembatalan sebelum pengiriman.
-  - Pembeli dapat membayar (tunai/transfer), membatalkan pesanan yang belum
+  - Warga dapat membayar (tunai/transfer), membatalkan pesanan yang belum
     dibayar, dan mengonfirmasi penerimaan barang.
 - **Kas otomatis & notifikasi**
-  - Penjual pengepul menerima kas masuk `penjualan_produk` saat pembayaran.
+  - Penjual industri menerima kas masuk `penjualan_produk` saat pembayaran.
     Pembatalan pesanan yang sudah dibayar menulis kas keluar `koreksi`.
   - Warga penjual tidak memiliki buku kas organisasi; transaksi tetap tercatat
     pada pesanan.
@@ -143,7 +148,7 @@ verifikasi organisasi)**.
     baru tetapi tetap tersedia untuk riwayat transaksi lama.
   - Pencarian, filter status, kartu statistik, serta empty/loading/error state.
 - **Admin — verifikasi organisasi** (`/admin/organisasi`)
-  - Daftar BSU, BSI, dan pengepul dengan filter status/tipe dan pencarian.
+  - Daftar BSU, BSI, dan industri dengan filter status/tipe dan pencarian.
   - Tinjau alamat, kontak, titik lokasi, dan tanggal pendaftaran.
   - Verifikasi, tolak, atau cabut verifikasi. Verifikasi mencatat `verified_at`
     dan `verified_by`; organisasi terverifikasi dapat dipakai pada alur
@@ -194,7 +199,12 @@ Buka SQL Editor Supabase lalu jalankan file berikut **sesuai urutan nama**:
 9. `supabase/migrations/20261106000900_storage.sql`
 10. `supabase/migrations/20261106001000_order_rpcs.sql`
 11. `supabase/migrations/20261106001100_product_rpcs.sql`
-12. `supabase/seed.sql` (khusus database baru)
+12. `supabase/migrations/20261109000100_enum_industri.sql`
+13. `supabase/migrations/20261109000200_migrate_roles.sql`
+14. `supabase/migrations/20261109000300_marketplace_kondisi.sql`
+15. `supabase/migrations/20261109000400_rls_industri.sql`
+16. `supabase/migrations/20261109000500_rpc_industri.sql`
+17. `supabase/seed.sql` (khusus database baru)
 
 Detail database, akun demo, dan keputusan RLS ada di
 [`supabase/README.md`](supabase/README.md).
@@ -239,9 +249,7 @@ Semua password: `Upcycle123!`
 | `bsu1@upcycle.id` | petugas BSU Melati |
 | `bsu2@upcycle.id` | petugas BSU Kenanga |
 | `bsi@upcycle.id` | petugas BSI Nusantara Hijau |
-| `pengepul@upcycle.id` | petugas CV Jaya Daur Ulang |
-| `pembeli1@upcycle.id` | pembeli |
-| `pembeli2@upcycle.id` | pembeli |
+| `industri@upcycle.id` | petugas CV Jaya Daur Ulang |
 
 Di mode development, halaman login menampilkan panel **Akun demo** untuk
 mengisi email/password otomatis.
@@ -250,17 +258,18 @@ mengisi email/password otomatis.
 
 | Peran | Menu utama |
 | --- | --- |
-| warga | Dashboard, Setor sampah, Harga BSU, Riwayat, Produk saya, Marketplace |
+| warga | Dashboard, Setor sampah, Harga BSU, Riwayat, Produk saya, Marketplace (Pesanan saya dibuka lewat Marketplace) |
 | bsu | Dashboard, Antrean setoran, Jemput, Harga, Buku kas |
 | bsi | Dashboard, Data masuk, Stok, Pesanan, Buku kas |
-| pengepul | Dashboard, Stok BSI, Pesanan, Produk, Buku kas |
-| pembeli | Dashboard, Katalog, Pesanan saya |
+| industri | Dashboard, Stok BSI, Pesanan, Produk, Buku kas |
 | admin | Dashboard, Jenis sampah, Verifikasi |
 
 Semua rute selain halaman publik dilindungi. Rute tahap 1–6 sudah aktif:
 marketplace dapat dibuka semua peran yang login, sedangkan pengelolaan produk,
-pesanan pembeli, master jenis sampah, dan verifikasi organisasi dibatasi sesuai
-peran masing-masing.
+pesanan warga, master jenis sampah, dan verifikasi organisasi dibatasi sesuai
+peran masing-masing. Rute lama `/pengepul/*` dialihkan ke `/industri/*`,
+`/pembeli/katalog` ke `/marketplace`, dan `/pembeli/pesanan` ke
+`/warga/pesanan`.
 
 ## Struktur singkat
 
@@ -288,9 +297,8 @@ src/
     warga/         form setor, harga BSU, riwayat setoran
     bsu/           antrean, jadwal jemput, harga, buku kas
     bsi/           data masuk, detail & publikasi, stok + harga jual, pesanan
-    pengepul/      katalog stok, pesanan
-    pembeli/       (katalog & pesanan memakai halaman bersama di products/)
-    products/      katalog marketplace, pesanan pembeli, kelola produk penjual
+    industri/      katalog stok, pesanan
+    products/      katalog marketplace, pesanan warga, kelola produk penjual
     admin/         master jenis sampah, verifikasi organisasi
     deposits/      halaman detail setoran bersama warga/BSU
     ...            dashboard, profil, setup, 404
@@ -319,7 +327,7 @@ supabase/
    urutan peta berjalan, serta kartu statistik kosong tampil rapi.
 4. Buka menu profil → ubah nama, unggah avatar, lalu muat ulang halaman.
 5. Coba “Lupa password” dan pastikan email reset mengarah ke halaman atur ulang.
-6. Logout, login sebagai `bsu1`, `bsi`, `pengepul`, `pembeli`, dan `admin`.
+6. Logout, login sebagai `bsu1`, `bsi`, `industri`, dan `admin`.
    Pastikan menu serta dashboard berubah sesuai peran.
 7. Buka URL rute peran lain secara manual (mis. `/admin/organisasi` sebagai
    warga) → harus dialihkan ke dashboard.
@@ -376,58 +384,59 @@ supabase/
    Lot stok baru harus muncul beserta BSU asal dan tautan setoran sumber.
 4. Coba publikasikan setoran lain yang harga jualnya belum lengkap → RPC harus
    menolak dengan pesan yang jelas.
-5. Login sebagai `pengepul@upcycle.id`, buka **Stok BSI**, cari BSI/jenis
+5. Login sebagai `industri@upcycle.id`, buka **Stok BSI**, cari BSI/jenis
    sampah, lalu **Buat pesanan** dengan berat sebagian. Pastikan total
    dibulatkan ke Rp100, stok berkurang, dan pesanan berstatus **Menunggu
    pembayaran**.
 6. Buka **Pesanan**, bayar pesanan dengan transfer atau tunai. Pastikan status
    menjadi **Dibayar**, kas masuk `penjualan_stok` muncul di **Buku kas BSI**,
-   dan kas keluar `pembelian_stok` muncul di **Buku kas pengepul**.
+   dan kas keluar `pembelian_stok` muncul di **Buku kas industri**.
 7. Kembali sebagai BSI, buka **Pesanan**, klik **Jadwalkan ambil dari BSU**.
    Satu jadwal dibuat per BSU asal; status pesanan menjadi **Diproses** dan BSU
    menerima notifikasi.
 8. Login sebagai `bsu1@upcycle.id`, buka **Jemput**. Bagian **Pengambilan stok
    oleh BSI** harus menampilkan rute beserta nomor pesanan. Tandai selesai →
    setoran asal menjadi **Diambil BSI**.
-9. Login sebagai pengepul, buka **Pesanan**. Setelah semua rute BSU selesai,
+9. Login sebagai industri, buka **Pesanan**. Setelah semua rute BSU selesai,
    jadwalkan pengambilan di BSI lalu tandai selesai. Pesanan menjadi **Selesai**
-   dan setoran asal menjadi **Diambil pengepul**. Menjadwalkan lebih awal harus
+   dan setoran asal menjadi **Diambil industri**. Menjadwalkan lebih awal harus
    ditolak sampai stok tiba di BSI.
-10. Buat pesanan baru yang belum dibayar lalu batalkan dari pengepul atau BSI.
+10. Buat pesanan baru yang belum dibayar lalu batalkan dari industri atau BSI.
     Pastikan stok kembali ke lot asal dan setoran sumber kembali
     **Dipublikasikan** bila tidak ada pesanan sah lain.
-11. Uji akses: warga/pembeli membuka `/bsi/stok` atau `/pengepul/kas` →
-    dialihkan ke dashboard. Pengepul tidak dapat melihat kas BSI, dan BSI tidak
+11. Uji akses: warga membuka `/bsi/stok` atau `/industri/kas` →
+    dialihkan ke dashboard. Industri tidak dapat melihat kas BSI, dan BSI tidak
     dapat membaca tabel `deposits` mentah.
 12. Jalankan `npm run typecheck` dan `npm run build` → keduanya harus lulus.
 
 ## Uji Tahap 5
 
-1. Pastikan migrasi `20261106001100_product_rpcs.sql` sudah diterapkan.
-   RPC harus tersedia di schema cache Supabase.
+1. Pastikan migrasi `20261106001100_product_rpcs.sql` dan lima migrasi
+   `2026110900*.sql` sudah diterapkan. RPC harus tersedia di schema cache
+   Supabase.
 2. Login sebagai `warga1@upcycle.id`, buka **Produk saya** → **Tambah produk**.
-   Isi nama, kategori, harga kelipatan Rp100, stok, satuan, dan unggah foto.
-   Pastikan produk muncul di **Marketplace**.
-3. Login sebagai `pengepul@upcycle.id`, buka **Produk**, lalu tambah produk
-   organisasi. Produk pengepul harus tampil dengan nama organisasi.
-4. Login sebagai `pembeli1@upcycle.id`, buka **Katalog**, cari produk, lalu
+   Isi nama, kategori, kondisi (`upcycle`/`bekas`), harga kelipatan Rp100,
+   stok, satuan, dan unggah foto. Pastikan produk muncul di **Marketplace**.
+3. Login sebagai `industri@upcycle.id`, buka **Produk**, lalu tambah produk
+   organisasi. Produk industri harus tampil dengan nama organisasi.
+4. Login sebagai `warga1@upcycle.id`, buka **Marketplace**, cari produk, lalu
    **Beli**. Isi jumlah, nomor WhatsApp, dan alamat. Pastikan stok langsung
    berkurang dan pesanan berstatus **Menunggu pembayaran**.
 5. Coba beli melebihi stok, membeli produk sendiri, atau mencampur produk dari
    dua penjual dalam satu pesanan → RPC harus menolak dengan pesan jelas.
 6. Dari **Pesanan saya**, bayar pesanan dengan transfer/tunai. Penjual menerima
-   notifikasi. Bila penjual adalah pengepul, kas masuk `penjualan_produk`
+   notifikasi. Bila penjual adalah industri, kas masuk `penjualan_produk`
    muncul di **Buku kas** organisasinya.
-7. Batalkan satu pesanan yang belum dibayar dari sisi pembeli. Pastikan stok
+7. Batalkan satu pesanan yang belum dibayar dari sisi warga. Pastikan stok
    kembali ke katalog.
 8. Sebagai penjual, buka tab **Pesanan masuk**, tandai pesanan yang sudah
-   dibayar sebagai **Kirim pesanan**. Sebagai pembeli, klik **Pesanan diterima**
+   dibayar sebagai **Kirim pesanan**. Sebagai warga, klik **Pesanan diterima**
    → status menjadi **Selesai**.
-9. Sebagai penjual pengepul, batalkan satu pesanan yang sudah dibayar sebelum
+9. Sebagai penjual industri, batalkan satu pesanan yang sudah dibayar sebelum
    dikirim. Pastikan stok kembali dan kas keluar `koreksi` tercatat.
-10. Buka `/warga/produk` atau `/admin/jenis-sampah` sebagai pembeli → harus
-    dialihkan ke dashboard. `/marketplace` harus tetap bisa dibuka semua peran,
-    tetapi tombol beli hanya muncul untuk pembeli.
+10. Buka `/warga/produk` atau `/admin/jenis-sampah` sebagai pengguna non-warga
+    yang tidak berhak → harus dialihkan ke dashboard. `/marketplace` harus tetap
+    bisa dibuka semua peran, tetapi tombol beli hanya muncul untuk warga.
 11. Jalankan `npm run typecheck` dan `npm run build` → keduanya harus lulus.
 
 ## Uji Tahap 6
@@ -442,7 +451,7 @@ supabase/
    verifikasi kembali. Pastikan badge status dan tanggal verifikasi berubah.
 6. Organisasi yang berstatus ditolak harus gagal dipakai pada alur transaksi
    baru sampai diverifikasi kembali.
-7. Buka `/admin/organisasi` sebagai warga atau pengepul → harus dialihkan ke
+7. Buka `/admin/organisasi` sebagai warga atau industri → harus dialihkan ke
    dashboard.
 8. Jalankan `npm run typecheck` dan `npm run build` → keduanya harus lulus.
 
@@ -453,9 +462,9 @@ supabase/
 - ✅ Tahap 3 — setoran warga, antrean BSU, timbang/bayar, harga, jadwal jemput,
   kas BSU
 - ✅ Tahap 4 — data masuk BSI, stok gabungan, harga jual, pesanan, pengambilan,
-  kas BSI & pengepul
-- ✅ Tahap 5 — marketplace produk daur ulang, pesanan pembeli, kas penjualan
-  produk
+  kas BSI & industri
+- ✅ Tahap 5 — marketplace barang bekas & produk upcycle, pesanan warga, kas
+  penjualan produk
 - ✅ Tahap 6 — admin master jenis sampah & verifikasi organisasi
 
 ## Troubleshooting
@@ -473,9 +482,9 @@ supabase/
   `20261106001000_order_rpcs.sql` sudah diterapkan. Publikasi juga gagal bila
   harga jual BSI untuk salah satu jenis sampah belum aktif.
 - **Pesanan produk gagal dibuat** — pastikan migrasi
-  `20261106001100_product_rpcs.sql` sudah diterapkan. Hanya akun **pembeli**
-  yang dapat membuat pesanan, stok harus cukup, dan produk tidak boleh milik
-  sendiri.
+  `20261106001100_product_rpcs.sql` dan `20261109000500_rpc_industri.sql` sudah
+  diterapkan. Hanya akun **warga** yang dapat membuat pesanan, stok harus cukup,
+  dan produk tidak boleh milik sendiri.
 - **Foto produk gagal diunggah** — jalankan
   `20261106000900_storage.sql`; bucket publik `product-images` harus ada dan
   penulisan hanya di folder `{user_id}/`.

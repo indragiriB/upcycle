@@ -7,7 +7,6 @@ import {
   Package,
   Recycle,
   ShieldCheck,
-  ShoppingBag,
   UserRound,
   Warehouse,
   type LucideIcon,
@@ -32,15 +31,14 @@ const ROLE_ICONS: Record<AppRole, LucideIcon> = {
   warga: Recycle,
   bsu: Building2,
   bsi: Warehouse,
-  pengepul: Package,
-  pembeli: ShoppingBag,
+  industri: Package,
   admin: ShieldCheck,
 };
 
 const TYPE_ICONS: Record<string, LucideIcon> = {
   bsu: Leaf,
   bsi: Building2,
-  pengepul: Package,
+  industri: Package,
 };
 
 export function RoleOverviewCard({
@@ -54,7 +52,7 @@ export function RoleOverviewCard({
   const candidates: Array<PrimaryAction & { short?: string }> = [
     PRIMARY_ACTIONS[profile.role],
     ...NAVIGATION[profile.role]
-      .filter((item) => item.to !== '/dashboard')
+      .filter((item) => item.to !== '/dashboard' && !item.hidden)
       .map((item) => ({
         label: item.label,
         to: item.to,

@@ -103,7 +103,7 @@ export function useBsuStockPickups(orgId: string | null) {
 
 export function useStockOrders(
   orgId: string | null,
-  side: 'bsi' | 'pengepul',
+  side: 'bsi' | 'industri',
 ) {
   return useQuery({
     queryKey: [ORDERS_KEY, side, orgId],
@@ -207,7 +207,7 @@ export function useCancelStockOrder() {
   });
 }
 
-export function useScheduleOrderPickup(side: 'bsi' | 'pengepul') {
+export function useScheduleOrderPickup(side: 'bsi' | 'industri') {
   const queryClient = useQueryClient();
 
   return useMutation({

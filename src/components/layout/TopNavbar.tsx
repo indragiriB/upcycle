@@ -14,7 +14,7 @@ export function TopNavbar({
   profile: ProfileWithOrganization;
   email: string | undefined;
 }) {
-  const navItems = NAVIGATION[profile.role];
+  const navItems = NAVIGATION[profile.role].filter((item) => !item.hidden);
 
   return (
     <header className="sticky top-0 z-40 bg-canvas/85 backdrop-blur-xl">

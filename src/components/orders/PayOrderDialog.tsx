@@ -59,7 +59,7 @@ export function PayOrderDialog({
       open={open}
       onClose={onClose}
       title="Bayar pesanan stok"
-      description="Pembayaran dicatat manual. Kas BSI dan pengepul diperbarui otomatis setelah pembayaran."
+      description="Pembayaran dicatat manual. Kas BSI dan industri diperbarui otomatis setelah pembayaran."
       size="sm"
       footer={
         <div className="flex justify-end gap-2">

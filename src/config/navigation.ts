@@ -22,6 +22,7 @@ export interface AppNavItem {
   to: string;
   icon: LucideIcon;
   end?: boolean;
+  hidden?: boolean;
 }
 
 export interface PrimaryAction {
@@ -38,6 +39,13 @@ export const NAVIGATION: Record<AppRole, AppNavItem[]> = {
     { label: 'Riwayat setoran', shortLabel: 'Riwayat', to: '/warga/riwayat', icon: History },
     { label: 'Produk saya', shortLabel: 'Produk', to: '/warga/produk', icon: Package },
     { label: 'Marketplace', shortLabel: 'Market', to: '/marketplace', icon: Store },
+    {
+      label: 'Pesanan saya',
+      shortLabel: 'Pesanan',
+      to: '/warga/pesanan',
+      icon: ShoppingBag,
+      hidden: true,
+    },
   ],
   bsu: [
     { label: 'Dashboard', shortLabel: 'Beranda', to: '/dashboard', icon: LayoutGrid, end: true },
@@ -53,17 +61,13 @@ export const NAVIGATION: Record<AppRole, AppNavItem[]> = {
     { label: 'Pesanan', shortLabel: 'Pesanan', to: '/bsi/pesanan', icon: ClipboardList },
     { label: 'Buku kas', shortLabel: 'Kas', to: '/bsi/kas', icon: Wallet },
   ],
-  pengepul: [
+  industri: [
     { label: 'Dashboard', shortLabel: 'Beranda', to: '/dashboard', icon: LayoutGrid, end: true },
-    { label: 'Stok BSI', shortLabel: 'Stok', to: '/pengepul/stok', icon: Warehouse },
-    { label: 'Pesanan', shortLabel: 'Pesanan', to: '/pengepul/pesanan', icon: ClipboardList },
-    { label: 'Produk', shortLabel: 'Produk', to: '/pengepul/produk', icon: Package },
-    { label: 'Buku kas', shortLabel: 'Kas', to: '/pengepul/kas', icon: Wallet },
-  ],
-  pembeli: [
-    { label: 'Dashboard', shortLabel: 'Beranda', to: '/dashboard', icon: LayoutGrid, end: true },
-    { label: 'Katalog', shortLabel: 'Katalog', to: '/pembeli/katalog', icon: Store },
-    { label: 'Pesanan saya', shortLabel: 'Pesanan', to: '/pembeli/pesanan', icon: ShoppingBag },
+    { label: 'Stok BSI', shortLabel: 'Stok', to: '/industri/stok', icon: Warehouse },
+    { label: 'Pesanan', shortLabel: 'Pesanan', to: '/industri/pesanan', icon: ClipboardList },
+    { label: 'Produk', shortLabel: 'Produk', to: '/industri/produk', icon: Package },
+    { label: 'Marketplace', shortLabel: 'Market', to: '/marketplace', icon: Store },
+    { label: 'Buku kas', shortLabel: 'Kas', to: '/industri/kas', icon: Wallet },
   ],
   admin: [
     { label: 'Dashboard', shortLabel: 'Beranda', to: '/dashboard', icon: LayoutGrid, end: true },
@@ -76,14 +80,13 @@ export const PRIMARY_ACTIONS: Record<AppRole, PrimaryAction> = {
   warga: { label: 'Buat setoran', to: '/warga/setor', icon: Recycle },
   bsu: { label: 'Buka antrean', to: '/bsu/setoran', icon: Inbox },
   bsi: { label: 'Lihat data masuk', to: '/bsi/setoran', icon: Inbox },
-  pengepul: { label: 'Jelajahi stok', to: '/pengepul/stok', icon: Warehouse },
-  pembeli: { label: 'Jelajahi marketplace', to: '/marketplace', icon: Store },
+  industri: { label: 'Jelajahi stok', to: '/industri/stok', icon: Warehouse },
   admin: { label: 'Verifikasi organisasi', to: '/admin/organisasi', icon: BadgeCheck },
 };
 
 export function getAllowedRolesForPath(path: string): AppRole[] {
   if (path === '/marketplace') {
-    return ['warga', 'bsu', 'bsi', 'pengepul', 'pembeli', 'admin'];
+    return ['warga', 'bsu', 'bsi', 'industri', 'admin'];
   }
   return (Object.keys(NAVIGATION) as AppRole[]).filter((role) =>
     NAVIGATION[role].some((item) => item.to === path),

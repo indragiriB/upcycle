@@ -47,13 +47,13 @@ import { useClickOutside } from '@/hooks/useClickOutside';
 const TYPE_ICONS: Record<string, LucideIcon> = {
   bsu: Leaf,
   bsi: Building2,
-  pengepul: Package,
+  industri: Package,
 };
 
 const PIN_SVGS: Record<string, string> = {
   bsu: '<path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/><path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>',
   bsi: '<path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><path d="M9 9v.01"/><path d="M9 12v.01"/><path d="M9 15v.01"/><path d="M9 18v.01"/>',
-  pengepul:
+  industri:
     '<path d="m7.5 4.27 9 5.15"/><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"/><path d="m3.3 7 8.7 5 8.7-5"/><path d="M12 22V12"/>',
 };
 
@@ -304,7 +304,7 @@ export function DashboardMap({
               Memuat peta mitra
             </p>
             <p className="mt-1 text-xs text-white/50">
-              Menyiapkan lokasi BSU, BSI, dan pengepul…
+              Menyiapkan lokasi BSU, BSI, dan industri…
             </p>
           </div>
         </div>

@@ -185,15 +185,15 @@ function timelineFor(deposit: BsiIncomingDeposit) {
       key: 'dipublikasikan',
       title: 'Dipublikasikan menjadi stok',
       description:
-        'BSI mengubah setoran menjadi lot stok yang dapat dibeli pengepul.',
+        'BSI mengubah setoran menjadi lot stok yang dapat dibeli industri.',
       at: deposit.dipublikasikan_at,
       done: Boolean(deposit.dipublikasikan_at),
     },
     {
       key: 'dibeli',
-      title: 'Dibeli pengepul',
+      title: 'Dibeli industri',
       description:
-        'Lot stok dialokasikan ke pesanan pengepul yang sah.',
+        'Lot stok dialokasikan ke pesanan industri yang sah.',
       at: purchased ? deposit.updated_at : null,
       done: purchased,
     },
@@ -206,8 +206,8 @@ function timelineFor(deposit: BsiIncomingDeposit) {
     },
     {
       key: 'diambil_pengepul',
-      title: 'Diambil pengepul',
-      description: 'Stok sudah diambil pengepul di lokasi BSI.',
+      title: 'Diambil industri',
+      description: 'Stok sudah diambil industri di lokasi BSI.',
       at: deposit.diambil_pengepul_at,
       done: Boolean(deposit.diambil_pengepul_at),
     },
@@ -541,7 +541,7 @@ export function IncomingDepositDetailPage() {
                     <p className="mt-3 flex items-start gap-2 rounded-2xl bg-brand-50 px-4 py-3 text-[10px] leading-5 text-brand-900">
                       <CheckCircle2 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
                       Setoran ini sudah menjadi stok dan menunggu pembelian
-                      pengepul.
+                      industri.
                     </p>
                     <div className="mt-3 flex flex-col gap-2">
                       <Link

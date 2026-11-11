@@ -11,13 +11,12 @@ import {
 import { useQueryClient } from '@tanstack/react-query';
 import type { Session } from '@supabase/supabase-js';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
-import type { AppRole, ProfileWithOrganization } from '@/types/database';
+import type { ProfileWithOrganization } from '@/types/database';
 
 interface SignUpInput {
   nama: string;
   email: string;
   password: string;
-  accountType: Extract<AppRole, 'warga' | 'pembeli'>;
 }
 
 interface AuthContextValue {
@@ -173,7 +172,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         emailRedirectTo: `${window.location.origin}/masuk`,
         data: {
           nama: input.nama.trim(),
-          account_type: input.accountType,
         },
       },
     });

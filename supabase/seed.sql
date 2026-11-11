@@ -5,7 +5,7 @@
 begin;
 
 -- ----------------------------------------------------------------------------
--- Akun auth (trigger handle_new_user membuat profil warga/pembeli otomatis)
+-- Akun auth (trigger handle_new_user membuat profil warga otomatis)
 -- ----------------------------------------------------------------------------
 insert into auth.users (
   instance_id, id, aud, role, email, encrypted_password,
@@ -83,33 +83,11 @@ values
   (
     '00000000-0000-0000-0000-000000000000',
     '10000000-0000-4000-8000-000000000007',
-    'authenticated', 'authenticated', 'pengepul@upcycle.id',
+    'authenticated', 'authenticated', 'industri@upcycle.id',
     extensions.crypt('Upcycle123!', extensions.gen_salt('bf')),
     now(),
     '{"provider":"email","providers":["email"]}'::jsonb,
     '{"nama":"Agus Setiawan"}'::jsonb,
-    now(), now(),
-    '', '', '', '', ''
-  ),
-  (
-    '00000000-0000-0000-0000-000000000000',
-    '10000000-0000-4000-8000-000000000008',
-    'authenticated', 'authenticated', 'pembeli1@upcycle.id',
-    extensions.crypt('Upcycle123!', extensions.gen_salt('bf')),
-    now(),
-    '{"provider":"email","providers":["email"]}'::jsonb,
-    '{"nama":"Maya Lestari","account_type":"pembeli"}'::jsonb,
-    now(), now(),
-    '', '', '', '', ''
-  ),
-  (
-    '00000000-0000-0000-0000-000000000000',
-    '10000000-0000-4000-8000-000000000009',
-    'authenticated', 'authenticated', 'pembeli2@upcycle.id',
-    extensions.crypt('Upcycle123!', extensions.gen_salt('bf')),
-    now(),
-    '{"provider":"email","providers":["email"]}'::jsonb,
-    '{"nama":"Fajar Nugroho","account_type":"pembeli"}'::jsonb,
     now(), now(),
     '', '', '', '', ''
   );
@@ -134,7 +112,7 @@ from auth.users u
 where u.email in (
   'admin@upcycle.id', 'warga1@upcycle.id', 'warga2@upcycle.id',
   'bsu1@upcycle.id', 'bsu2@upcycle.id', 'bsi@upcycle.id',
-  'pengepul@upcycle.id', 'pembeli1@upcycle.id', 'pembeli2@upcycle.id'
+  'industri@upcycle.id'
 );
 
 -- ----------------------------------------------------------------------------
@@ -167,9 +145,9 @@ values
     '10000000-0000-4000-8000-000000000001'
   ),
   (
-    '20000000-0000-4000-8000-000000000004', 'pengepul', 'CV Jaya Daur Ulang',
+    '20000000-0000-4000-8000-000000000004', 'industri', 'CV Jaya Daur Ulang',
     'cv-jaya-daur-ulang', 'Jl. Industri Raya No. 27', 'Jakarta Timur',
-    'DKI Jakarta', '081234567804', 'pengepul@upcycle.id',
+    'DKI Jakarta', '081234567804', 'industri@upcycle.id',
     -6.224600, 106.841200, 'verified', now(),
     '10000000-0000-4000-8000-000000000001'
   );
@@ -194,7 +172,7 @@ set role = 'bsi', org_id = '20000000-0000-4000-8000-000000000003'
 where id = '10000000-0000-4000-8000-000000000006';
 
 update public.profiles
-set role = 'pengepul', org_id = '20000000-0000-4000-8000-000000000004'
+set role = 'industri', org_id = '20000000-0000-4000-8000-000000000004'
 where id = '10000000-0000-4000-8000-000000000007';
 
 -- ----------------------------------------------------------------------------
@@ -269,10 +247,10 @@ values
    'jual', 5500, now() - interval '30 days', '10000000-0000-4000-8000-000000000006');
 
 -- ----------------------------------------------------------------------------
--- Produk marketplace contoh (dijual warga & pengepul)
+-- Produk marketplace contoh (dijual warga & industri)
 -- ----------------------------------------------------------------------------
 insert into public.products (
-  id, penjual_id, penjual_org_id, nama, deskripsi, kategori,
+  id, penjual_id, penjual_org_id, nama, deskripsi, kategori, kondisi,
   harga, stok, satuan, foto_urls, status
 )
 values
@@ -281,7 +259,7 @@ values
     '10000000-0000-4000-8000-000000000002', null,
     'Tas Jinjing Anyaman Plastik',
     'Tas jinjing unik hasil anyaman kemasan plastik daur ulang. Dikerjakan manual oleh warga BSU Melati.',
-    'Fashion', 85000, 6, 'pcs',
+    'Fashion', 'upcycle', 85000, 6, 'pcs',
     array['https://images.unsplash.com/photo-1590874103328-eac38a683ce7?auto=format&fit=crop&w=900&q=80'],
     'aktif'
   ),
@@ -290,7 +268,7 @@ values
     '10000000-0000-4000-8000-000000000003', null,
     'Pot Tanaman dari Kaleng Bekas',
     'Pot tanaman dekoratif dari kaleng bekas yang dicat ulang. Cocok untuk tanaman hias kecil.',
-    'Dekorasi', 45000, 12, 'pcs',
+    'Dekorasi', 'upcycle', 45000, 12, 'pcs',
     array['https://images.unsplash.com/photo-1485955900006-10f4d324d411?auto=format&fit=crop&w=900&q=80'],
     'aktif'
   ),
@@ -299,7 +277,7 @@ values
     '10000000-0000-4000-8000-000000000007', '20000000-0000-4000-8000-000000000004',
     'Buku Catatan Kertas Daur Ulang',
     'Buku catatan 80 lembar dengan sampul kertas daur ulang.',
-    'Alat Tulis', 32000, 25, 'pcs',
+    'Alat Tulis', 'upcycle', 32000, 25, 'pcs',
     array['https://images.unsplash.com/photo-1531346878377-a5be20888e57?auto=format&fit=crop&w=900&q=80'],
     'aktif'
   ),
@@ -308,7 +286,7 @@ values
     '10000000-0000-4000-8000-000000000007', '20000000-0000-4000-8000-000000000004',
     'Pouch Serat Kertas',
     'Pouch kecil serbaguna dari serat kertas daur ulang, dilengkapi resleting.',
-    'Aksesoris', 58000, 10, 'pcs',
+    'Aksesoris', 'bekas', 58000, 10, 'pcs',
     array['https://images.unsplash.com/photo-1553062407-98eeb64c6a62?auto=format&fit=crop&w=900&q=80'],
     'aktif'
   );

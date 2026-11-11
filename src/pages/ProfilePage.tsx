@@ -17,7 +17,6 @@ import {
   Recycle,
   Save,
   ShieldCheck,
-  ShoppingBag,
   UserRound,
   type LucideIcon,
 } from 'lucide-react';
@@ -45,15 +44,14 @@ const ROLE_ICONS: Record<AppRole, LucideIcon> = {
   warga: Recycle,
   bsu: Building2,
   bsi: Building2,
-  pengepul: Package,
-  pembeli: ShoppingBag,
+  industri: Package,
   admin: ShieldCheck,
 };
 
 const ORG_ICONS: Record<OrganizationType, LucideIcon> = {
   bsu: Leaf,
   bsi: Building2,
-  pengepul: Package,
+  industri: Package,
 };
 
 const MAX_AVATAR_SIZE = 2 * 1024 * 1024;

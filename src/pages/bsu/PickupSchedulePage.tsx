@@ -536,7 +536,7 @@ export function PickupSchedulePage() {
                 Pengambilan stok oleh BSI
               </h2>
               <p className="text-[10px] text-muted">
-                Rute jemput stok pesanan pengepul dari BSU Anda.
+                Rute jemput stok pesanan industri dari BSU Anda.
               </p>
             </div>
           </div>
@@ -610,7 +610,7 @@ export function PickupSchedulePage() {
               <EmptyState
                 icon={PackageCheck}
                 title="Belum ada rute stok"
-                description="BSI akan menjadwalkan pengambilan stok pesanan pengepul dari BSU Anda."
+                description="BSI akan menjadwalkan pengambilan stok pesanan industri dari BSU Anda."
                 compact
               />
             )}

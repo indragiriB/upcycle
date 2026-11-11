@@ -1,4 +1,4 @@
-import { Route, Routes } from 'react-router-dom';
+import { Navigate, Route, Routes } from 'react-router-dom';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { AppShell } from '@/components/layout/AppShell';
 import {
@@ -27,12 +27,11 @@ import { IncomingDepositsPage } from '@/pages/bsi/IncomingDepositsPage';
 import { IncomingDepositDetailPage } from '@/pages/bsi/IncomingDepositDetailPage';
 import { StockPage as BsiStockPage } from '@/pages/bsi/StockPage';
 import { BsiOrdersPage } from '@/pages/bsi/OrdersPage';
-import { PengepulStockPage } from '@/pages/pengepul/StockCatalogPage';
-import { PengepulOrdersPage } from '@/pages/pengepul/OrdersPage';
+import { IndustriStockPage } from '@/pages/industri/StockCatalogPage';
+import { IndustriOrdersPage } from '@/pages/industri/OrdersPage';
 import { MarketplacePage } from '@/pages/MarketplacePage';
-import { ProductCatalogPage } from '@/pages/products/ProductCatalogPage';
 import { ProductManagementPage } from '@/pages/products/ProductManagementPage';
-import { BuyerOrdersPage } from '@/pages/products/BuyerOrdersPage';
+import { WargaOrdersPage } from '@/pages/products/WargaOrdersPage';
 import { WasteTypesPage } from '@/pages/admin/WasteTypesPage';
 import { OrganizationVerificationPage } from '@/pages/admin/OrganizationVerificationPage';
 
@@ -177,33 +176,33 @@ export default function App() {
           />
 
           <Route
-            path="/pengepul/stok"
+            path="/industri/stok"
             element={
-              <RoleGate path="/pengepul/stok">
-                <PengepulStockPage />
+              <RoleGate path="/industri/stok">
+                <IndustriStockPage />
               </RoleGate>
             }
           />
           <Route
-            path="/pengepul/pesanan"
+            path="/industri/pesanan"
             element={
-              <RoleGate path="/pengepul/pesanan">
-                <PengepulOrdersPage />
+              <RoleGate path="/industri/pesanan">
+                <IndustriOrdersPage />
               </RoleGate>
             }
           />
           <Route
-            path="/pengepul/kas"
+            path="/industri/kas"
             element={
-              <RoleGate path="/pengepul/kas">
-                <CashBookPage variant="pengepul" />
+              <RoleGate path="/industri/kas">
+                <CashBookPage variant="industri" />
               </RoleGate>
             }
           />
           <Route
-            path="/pengepul/produk"
+            path="/industri/produk"
             element={
-              <RoleGate path="/pengepul/produk">
+              <RoleGate path="/industri/produk">
                 <ProductManagementPage />
               </RoleGate>
             }
@@ -227,21 +226,20 @@ export default function App() {
             }
           />
           <Route
-            path="/pembeli/katalog"
+            path="/warga/pesanan"
             element={
-              <RoleGate path="/pembeli/katalog">
-                <ProductCatalogPage />
+              <RoleGate path="/warga/pesanan">
+                <WargaOrdersPage />
               </RoleGate>
             }
           />
-          <Route
-            path="/pembeli/pesanan"
-            element={
-              <RoleGate path="/pembeli/pesanan">
-                <BuyerOrdersPage />
-              </RoleGate>
-            }
-          />
+
+          <Route path="/pembeli/katalog" element={<Navigate to="/marketplace" replace />} />
+          <Route path="/pembeli/pesanan" element={<Navigate to="/warga/pesanan" replace />} />
+          <Route path="/pengepul/stok" element={<Navigate to="/industri/stok" replace />} />
+          <Route path="/pengepul/pesanan" element={<Navigate to="/industri/pesanan" replace />} />
+          <Route path="/pengepul/kas" element={<Navigate to="/industri/kas" replace />} />
+          <Route path="/pengepul/produk" element={<Navigate to="/industri/produk" replace />} />
 
           <Route
             path="/admin/jenis-sampah"

@@ -66,7 +66,7 @@ const TYPE_FILTERS: Array<{ key: TypeFilter; label: string }> = [
   { key: 'semua', label: 'Semua tipe' },
   { key: 'bsu', label: 'BSU' },
   { key: 'bsi', label: 'BSI' },
-  { key: 'pengepul', label: 'Pengepul' },
+  { key: 'industri', label: 'Industri' },
 ];
 
 export function OrganizationVerificationPage() {
@@ -122,7 +122,7 @@ export function OrganizationVerificationPage() {
       label: 'Total organisasi',
       value: organizations.length,
       format: 'number',
-      hint: 'BSU, BSI, pengepul',
+      hint: 'BSU, BSI, industri',
     },
   ];
 
@@ -156,7 +156,7 @@ export function OrganizationVerificationPage() {
       <PageHeader
         eyebrow="Admin & verifikasi"
         title="Verifikasi organisasi"
-        description="Tinjau akun BSU, BSI, dan pengepul yang mendaftar. Organisasi terverifikasi dapat dipakai pada alur setoran, stok, dan marketplace."
+        description="Tinjau akun BSU, BSI, dan industri yang mendaftar. Organisasi terverifikasi dapat dipakai pada alur setoran, stok, dan marketplace."
         backTo="/dashboard"
         backLabel="Kembali ke dashboard"
       />
@@ -276,7 +276,7 @@ export function OrganizationVerificationPage() {
               <EmptyState
                 icon={Building2}
                 title="Belum ada organisasi"
-                description="Akun BSU, BSI, dan pengepul yang mendaftar akan muncul di sini."
+                description="Akun BSU, BSI, dan industri yang mendaftar akan muncul di sini."
               />
             )}
 

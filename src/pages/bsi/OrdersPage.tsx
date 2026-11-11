@@ -72,7 +72,7 @@ export function BsiOrdersPage() {
     text: string;
   } | null>(null);
 
-  usePageTitle('Pesanan pengepul');
+  usePageTitle('Pesanan industri');
 
   const ordersQuery = useStockOrders(orgId, 'bsi');
   const pickupMutation = useUpdatePickupStatus();
@@ -107,7 +107,7 @@ export function BsiOrdersPage() {
       label: 'Perlu diproses',
       value: needProcess.length,
       format: 'number',
-      hint: 'Sudah dibayar pengepul',
+      hint: 'Sudah dibayar industri',
       badge: needProcess.length > 0 ? 'Perlu aksi' : undefined,
     },
     {
@@ -164,8 +164,8 @@ export function BsiOrdersPage() {
     <div className="mx-auto max-w-5xl space-y-4 pb-4">
       <PageHeader
         eyebrow="Pesanan BSI"
-        title="Pesanan stok pengepul"
-        description="Proses pembayaran masuk, atur pengambilan dari BSU, dan selesaikan serah terima stok ke pengepul."
+        title="Pesanan stok industri"
+        description="Proses pembayaran masuk, atur pengambilan dari BSU, dan selesaikan serah terima stok ke industri."
         backTo="/dashboard"
         backLabel="Kembali ke dashboard"
         actions={
@@ -218,7 +218,7 @@ export function BsiOrdersPage() {
               label="Cari pesanan"
               value={search}
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Nomor pesanan, pengepul, atau jenis sampah"
+              placeholder="Nomor pesanan, industri, atau jenis sampah"
               icon={Search}
             />
           </div>
@@ -296,7 +296,7 @@ export function BsiOrdersPage() {
               <EmptyState
                 icon={ClipboardList}
                 title="Belum ada pesanan"
-                description="Pesanan dari pengepul akan muncul di sini setelah stok dipublikasikan dan harga jual diatur."
+                description="Pesanan dari industri akan muncul di sini setelah stok dipublikasikan dan harga jual diatur."
                 action={
                   <Link
                     to="/bsi/stok"

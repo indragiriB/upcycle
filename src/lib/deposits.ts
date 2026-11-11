@@ -147,8 +147,8 @@ export function depositTimeline(deposit: DepositRecord): DepositTimelineStep[] {
     },
     {
       key: 'dibeli_pengepul',
-      title: 'Dibeli pengepul',
-      description: 'Stok setoran dialokasikan ke pesanan pengepul.',
+      title: 'Dibeli industri',
+      description: 'Stok setoran dialokasikan ke pesanan industri.',
       at: null,
       done: purchased,
     },
@@ -161,8 +161,8 @@ export function depositTimeline(deposit: DepositRecord): DepositTimelineStep[] {
     },
     {
       key: 'diambil_pengepul',
-      title: 'Diambil pengepul',
-      description: 'Pengepul mengambil stok dari lokasi BSI.',
+      title: 'Diambil industri',
+      description: 'Industri mengambil stok dari lokasi BSI.',
       at: deposit.diambil_pengepul_at,
       done: Boolean(deposit.diambil_pengepul_at),
     },

@@ -17,7 +17,7 @@ const FEATURES = [
   {
     icon: ShoppingBag,
     title: 'Marketplace daur ulang',
-    description: 'Produk kreatif dari warga dan pengepul dalam satu tempat.',
+    description: 'Produk kreatif dan barang bekas dari warga serta industri dalam satu tempat.',
   },
 ];
 
@@ -67,7 +67,7 @@ export function AuthLayout({
               <span className="text-brand-400">nilai yang bertumbuh.</span>
             </h2>
             <p className="mt-4 max-w-[430px] text-sm leading-6 text-white/50">
-              Satu ruang kerja untuk warga, bank sampah, pengepul, dan pembeli
+              Satu ruang kerja untuk warga, bank sampah, industri, dan admin
               produk daur ulang.
             </p>
 
@@ -99,7 +99,7 @@ export function AuthLayout({
                 Satu akun, lima peran
               </p>
               <div className="mt-2.5 flex flex-wrap gap-1.5">
-                {['Warga', 'BSU', 'BSI', 'Pengepul', 'Pembeli'].map((role) => (
+                {['Warga', 'BSU', 'BSI', 'Industri'].map((role) => (
                   <span
                     key={role}
                     className="rounded-full border border-white/10 bg-white/[0.06] px-2.5 py-1 text-[10px] font-semibold text-white/65"

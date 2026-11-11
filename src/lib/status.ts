@@ -7,9 +7,9 @@ export const DEPOSIT_STATUS_LABELS: Record<string, string> = {
   dikonfirmasi: 'Dikonfirmasi',
   dikirim_ke_bsi: 'Dikirim ke BSI',
   dipublikasikan: 'Dipublikasikan',
-  dibeli_pengepul: 'Dibeli pengepul',
+  dibeli_pengepul: 'Dibeli industri',
   diambil_bsi: 'Diambil BSI',
-  diambil_pengepul: 'Diambil pengepul',
+  diambil_pengepul: 'Diambil industri',
 };
 
 export const DEPOSIT_STATUS_TONES: Record<string, BadgeTone> = {
@@ -42,7 +42,7 @@ export const ORDER_STATUS_TONES: Record<string, BadgeTone> = {
 
 export const PICKUP_TYPE_LABELS: Record<string, string> = {
   bsi_ke_bsu: 'BSI mengambil dari BSU',
-  pengepul_ke_bsi: 'Pengepul mengambil di BSI',
+  pengepul_ke_bsi: 'Industri mengambil di BSI',
 };
 
 export const PICKUP_STATUS_LABELS: Record<string, string> = {

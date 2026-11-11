@@ -20,7 +20,7 @@ import type { OrganizationSummary } from '@/types/database';
 const TYPE_ICONS: Record<string, LucideIcon> = {
   bsu: Leaf,
   bsi: Building2,
-  pengepul: Package,
+  industri: Package,
 };
 
 export function PartnerListCard({

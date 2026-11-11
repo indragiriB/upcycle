@@ -15,7 +15,7 @@ export function CancelProductOrderDialog({
   open: boolean;
   onClose: () => void;
   order: ProductOrderRecord | null;
-  viewer: 'pembeli' | 'penjual';
+  viewer: 'warga' | 'penjual';
 }) {
   const [error, setError] = useState<string | null>(null);
   const mutation = useCancelProductOrder();
@@ -77,7 +77,7 @@ export function CancelProductOrderDialog({
         </div>
 
         <p className="text-[11px] leading-5 text-muted">
-          {viewer === 'pembeli'
+          {viewer === 'warga'
             ? 'Pesanan yang belum dibayar dapat dibatalkan kapan saja. Setelah dibayar, pembatalan hanya dapat dilakukan penjual.'
             : paid
               ? 'Pesanan sudah dibayar. Pembatalan akan mencatat kas keluar koreksi pada buku kas organisasi Anda dan stok dikembalikan.'

@@ -87,7 +87,7 @@ export function PayProductOrderDialog({
 
         <div className="flex items-start gap-2 rounded-2xl bg-amber-50 px-3.5 py-3 text-[10px] leading-4 text-amber-800">
           <Wallet className="mt-0.5 h-3.5 w-3.5 shrink-0" />
-          Pembayaran dilakukan langsung antara pembeli dan penjual. UPCYCLE
+          Pembayaran dilakukan langsung antara warga dan penjual. UPCYCLE
           mencatat status dan, untuk penjual organisasi, kas masuk otomatis.
         </div>
 

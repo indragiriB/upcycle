@@ -18,7 +18,7 @@ export function PickupList({
   pendingId,
 }: {
   pickups: PickupRecord[];
-  viewer: 'bsi' | 'bsu' | 'pengepul';
+  viewer: 'bsi' | 'bsu' | 'industri';
   onComplete?: (pickup: PickupRecord) => void;
   pendingId?: string | null;
 }) {
@@ -61,7 +61,7 @@ export function PickupList({
             ? viewer === 'bsi'
               ? pickup.bsu
               : null
-            : viewer === 'pengepul'
+            : viewer === 'industri'
               ? pickup.bsi
               : null;
         const address = contactParty
@@ -81,7 +81,7 @@ export function PickupList({
               contactParty.telepon ?? null,
               viewer === 'bsi'
                 ? 'Halo, saya dari BSI terkait jadwal pengambilan stok.'
-                : 'Halo, saya dari pengepul terkait jadwal pengambilan pesanan.',
+                : 'Halo, saya dari industri terkait jadwal pengambilan pesanan.',
             )
           : null;
 

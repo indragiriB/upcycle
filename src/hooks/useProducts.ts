@@ -4,6 +4,7 @@ import { toNumber } from '@/lib/utils';
 import type {
   AppRole,
   PaymentMethod,
+  ProductCondition,
   ProductOrderRecord,
   ProductRecord,
   Profile,
@@ -13,7 +14,7 @@ export const PRODUCTS_KEY = 'products';
 export const PRODUCT_ORDERS_KEY = 'product-orders';
 
 const PRODUCT_SELECT = `
-  id, penjual_id, penjual_org_id, nama, deskripsi, kategori, harga, stok,
+  id, penjual_id, penjual_org_id, nama, deskripsi, kategori, kondisi, harga, stok,
   satuan, foto_urls, status, created_at, updated_at,
   penjual:profiles!products_penjual_id_fkey(id, nama, role, avatar_url),
   org:organizations!products_penjual_org_id_fkey(id, nama, kota)
@@ -28,7 +29,7 @@ const PRODUCT_ORDER_SELECT = `
   penjual_org:organizations!product_orders_penjual_org_id_fkey(nama, alamat, kota, telepon),
   product_order_items(
     id, order_id, product_id, nama_produk, harga_satuan, jumlah, subtotal,
-    created_at,
+    kondisi_produk, created_at,
     products(foto_urls)
   )
 `;
@@ -93,7 +94,7 @@ export function useSellerProducts({
   orgId: string | null;
   role: AppRole | null;
 }) {
-  const sellerKey = role === 'pengepul' && orgId ? orgId : userId;
+  const sellerKey = role === 'industri' && orgId ? orgId : userId;
 
   return useQuery({
     queryKey: [PRODUCTS_KEY, 'seller', sellerKey],
@@ -107,7 +108,7 @@ export function useSellerProducts({
         .limit(200);
 
       request =
-        role === 'pengepul' && orgId
+        role === 'industri' && orgId
           ? request.eq('penjual_org_id', orgId)
           : request.eq('penjual_id', userId);
 
@@ -123,7 +124,7 @@ export function useProductOrders({
   userId,
   orgId,
 }: {
-  role: 'pembeli' | 'penjual';
+  role: 'warga' | 'penjual';
   userId: string | null;
   orgId: string | null;
 }) {
@@ -141,7 +142,7 @@ export function useProductOrders({
         .limit(200);
 
       request =
-        role === 'pembeli'
+        role === 'warga'
           ? request.eq('pembeli_id', userId)
           : orgId
             ? request.eq('penjual_org_id', orgId)
@@ -160,6 +161,7 @@ export interface ProductInput {
   nama: string;
   deskripsi: string;
   kategori: string;
+  kondisi: ProductCondition;
   harga: number;
   stok: number;
   satuan: string;
@@ -178,10 +180,11 @@ export function useCreateProduct(profile: Profile | null) {
         .insert({
           penjual_id: profile.id,
           penjual_org_id:
-            profile.role === 'pengepul' ? profile.org_id : null,
+            profile.role === 'industri' ? profile.org_id : null,
           nama: input.nama.trim(),
           deskripsi: input.deskripsi.trim() || null,
           kategori: input.kategori.trim() || null,
+          kondisi: input.kondisi,
           harga: input.harga,
           stok: input.stok,
           satuan: input.satuan.trim() || 'pcs',
@@ -214,6 +217,7 @@ export function useUpdateProduct() {
           nama: input.nama.trim(),
           deskripsi: input.deskripsi.trim() || null,
           kategori: input.kategori.trim() || null,
+          kondisi: input.kondisi,
           harga: input.harga,
           stok: input.stok,
           satuan: input.satuan.trim() || 'pcs',

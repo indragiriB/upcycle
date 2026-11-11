@@ -2,11 +2,10 @@ export type AppRole =
   | 'warga'
   | 'bsu'
   | 'bsi'
-  | 'pengepul'
-  | 'pembeli'
+  | 'industri'
   | 'admin';
 
-export type OrganizationType = 'bsu' | 'bsi' | 'pengepul';
+export type OrganizationType = 'bsu' | 'bsi' | 'industri';
 export type VerificationStatus = 'pending' | 'verified' | 'rejected';
 export type DepositMethod = 'jemput' | 'antar';
 export type PaymentMethod = 'tunai' | 'transfer';
@@ -344,6 +343,7 @@ export interface StockOrder {
 }
 
 export type ProductStatus = 'aktif' | 'nonaktif';
+export type ProductCondition = 'bekas' | 'upcycle';
 export type ProductOrderStatus =
   | 'menunggu_pembayaran'
   | 'dibayar'
@@ -358,6 +358,7 @@ export interface ProductRecord {
   nama: string;
   deskripsi: string | null;
   kategori: string | null;
+  kondisi: ProductCondition;
   harga: number;
   stok: number;
   satuan: string;
@@ -386,6 +387,7 @@ export interface ProductOrderItemRecord {
   harga_satuan: number;
   jumlah: number;
   subtotal: number;
+  kondisi_produk: ProductCondition;
   created_at: string;
   products?: { foto_urls: string[] } | null;
 }

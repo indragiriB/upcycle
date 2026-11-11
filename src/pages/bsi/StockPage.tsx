@@ -170,7 +170,7 @@ export function StockPage() {
       <PageHeader
         eyebrow="Stok BSI"
         title="Stok gabungan & harga jual"
-        description="Pantau lot stok dari seluruh BSU, atur harga jual per kilogram, dan pastikan stok siap dibeli pengepul."
+        description="Pantau lot stok dari seluruh BSU, atur harga jual per kilogram, dan pastikan stok siap dibeli industri."
         backTo="/dashboard"
         backLabel="Kembali ke dashboard"
         actions={
@@ -489,7 +489,7 @@ export function StockPage() {
                 </h2>
                 <ul className="mt-2 space-y-1.5 text-[10px] leading-4 text-muted">
                   <li>
-                    Harga jual dipakai saat pengepul membuat pesanan stok.
+                    Harga jual dipakai saat industri membuat pesanan stok.
                   </li>
                   <li>
                     Publikasi setoran gagal bila salah satu jenis sampah belum

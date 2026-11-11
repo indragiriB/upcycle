@@ -43,7 +43,7 @@ const FILTERS: Array<{ key: OrderFilter; label: string }> = [
   { key: 'dibatalkan', label: 'Dibatalkan' },
 ];
 
-export function BuyerOrdersPage() {
+export function WargaOrdersPage() {
   const { profile } = useAuth();
   const [filter, setFilter] = useState<OrderFilter>('semua');
   const [search, setSearch] = useState('');
@@ -60,7 +60,7 @@ export function BuyerOrdersPage() {
   usePageTitle('Pesanan produk saya');
 
   const ordersQuery = useProductOrders({
-    role: 'pembeli',
+    role: 'warga',
     userId: profile?.id ?? null,
     orgId: null,
   });
@@ -158,7 +158,7 @@ export function BuyerOrdersPage() {
         backLabel="Kembali ke dashboard"
         actions={
           <Link
-            to="/pembeli/katalog"
+            to="/marketplace"
             className={buttonStyles({ variant: 'secondary', size: 'sm' })}
           >
             Jelajahi katalog
@@ -262,7 +262,7 @@ export function BuyerOrdersPage() {
                 description="Pesanan produk yang Anda buat akan muncul di sini."
                 action={
                   <Link
-                    to="/pembeli/katalog"
+                    to="/marketplace"
                     className={buttonStyles({ variant: 'secondary', size: 'sm' })}
                   >
                     <ShoppingBag className="h-3.5 w-3.5" />
@@ -289,7 +289,7 @@ export function BuyerOrdersPage() {
                 <ProductOrderCard
                   key={order.id}
                   order={order}
-                  viewer="pembeli"
+                  viewer="warga"
                   pending={pendingId === order.id}
                   onPay={setPayOrder}
                   onCancel={setCancelOrder}
@@ -322,7 +322,7 @@ export function BuyerOrdersPage() {
           open
           onClose={() => setCancelOrder(null)}
           order={cancelOrder}
-          viewer="pembeli"
+          viewer="warga"
         />
       )}
     </div>

@@ -16,6 +16,7 @@ import {
   statusTone,
 } from '@/lib/status';
 import { paymentMethodLabel } from '@/lib/deposits';
+import { PRODUCT_CONDITION_LABELS } from '@/lib/products';
 import {
   formatCurrency,
   formatDateTime,
@@ -33,7 +34,7 @@ export function ProductOrderCard({
   pending = false,
 }: {
   order: ProductOrderRecord;
-  viewer: 'pembeli' | 'penjual';
+  viewer: 'warga' | 'penjual';
   onPay?: (order: ProductOrderRecord) => void;
   onCancel?: (order: ProductOrderRecord) => void;
   onShip?: (order: ProductOrderRecord) => void;
@@ -41,10 +42,10 @@ export function ProductOrderCard({
   pending?: boolean;
 }) {
   const items = order.product_order_items ?? [];
-  const isBuyer = viewer === 'pembeli';
+  const isBuyer = viewer === 'warga';
   const counterpart = isBuyer
     ? order.penjual_org?.nama ?? order.penjual?.nama ?? 'Penjual'
-    : order.pembeli?.nama ?? 'Pembeli';
+    : order.pembeli?.nama ?? 'Warga';
 
   const canPay = isBuyer && order.status === 'menunggu_pembayaran';
   const canCancelBuyer =
@@ -62,7 +63,7 @@ export function ProductOrderCard({
   const sellerWhatsApp = order.penjual_org?.telepon
     ? whatsappUrl(
         order.penjual_org.telepon,
-        `Halo, saya pembeli terkait pesanan ${order.nomor}.`,
+        `Halo, saya warga terkait pesanan ${order.nomor}.`,
       )
     : null;
 
@@ -74,7 +75,7 @@ export function ProductOrderCard({
             {order.nomor}
           </p>
           <p className="mt-0.5 text-[10px] text-muted">
-            {isBuyer ? 'Penjual' : 'Pembeli'}: {counterpart} ·{' '}
+            {isBuyer ? 'Penjual' : 'Warga'}: {counterpart} ·{' '}
             {formatDateTime(order.created_at)}
           </p>
         </div>
@@ -108,6 +109,7 @@ export function ProductOrderCard({
                 {item.nama_produk}
               </p>
               <p className="mt-0.5 text-[9px] text-muted">
+                {PRODUCT_CONDITION_LABELS[item.kondisi_produk]} ·{' '}
                 {item.jumlah} × {formatCurrency(item.harga_satuan)}
               </p>
             </div>
@@ -139,7 +141,7 @@ export function ProductOrderCard({
               rel="noreferrer"
               className="inline-flex font-semibold text-brand-700 hover:text-brand-800"
             >
-              Hubungi pembeli
+              Hubungi warga
             </a>
           )}
           {isBuyer && sellerWhatsApp && (

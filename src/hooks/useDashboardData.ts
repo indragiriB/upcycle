@@ -6,8 +6,6 @@ import {
   DEPOSIT_STATUS_TONES,
   ORDER_STATUS_LABELS,
   ORDER_STATUS_TONES,
-  PRODUCT_ORDER_STATUS_LABELS,
-  PRODUCT_ORDER_STATUS_TONES,
   VERIFICATION_LABELS,
   VERIFICATION_TONES,
   statusLabel,
@@ -72,14 +70,6 @@ interface OrderRow {
   created_at: string;
 }
 
-interface ProductOrderRow {
-  id: string;
-  nomor: string;
-  status: string;
-  total: number | string;
-  created_at: string;
-}
-
 interface OrganizationRow {
   id: string;
   nama: string;
@@ -110,11 +100,6 @@ const RECEIVED_DEPOSIT_STATUSES = [
 ];
 
 const ACTIVE_ORDER_STATUSES = ['menunggu_pembayaran', 'dibayar', 'diproses'];
-const ACTIVE_PRODUCT_ORDER_STATUSES = [
-  'menunggu_pembayaran',
-  'dibayar',
-  'dikirim',
-];
 
 const number = (value: unknown) => {
   const parsed = Number(value ?? 0);
@@ -418,7 +403,7 @@ async function loadBsiSnapshot(orgId: string): Promise<DashboardSnapshot> {
   };
 }
 
-async function loadPengepulSnapshot(orgId: string): Promise<DashboardSnapshot> {
+async function loadIndustriSnapshot(orgId: string): Promise<DashboardSnapshot> {
   const monthStart = monthStartIso();
   const [orderResult, stockResult, ledgerResult] = await Promise.all([
     supabase
@@ -501,88 +486,7 @@ async function loadPengepulSnapshot(orgId: string): Promise<DashboardSnapshot> {
       date: row.created_at,
       status: statusLabel(row.status, ORDER_STATUS_LABELS),
       tone: statusTone(row.status, ORDER_STATUS_TONES),
-      href: '/pengepul/pesanan',
-    })),
-  };
-}
-
-async function loadPembeliSnapshot(userId: string): Promise<DashboardSnapshot> {
-  const [orderResult, productCountResult] = await Promise.all([
-    supabase
-      .from('product_orders')
-      .select('id, nomor, status, total, created_at')
-      .eq('pembeli_id', userId)
-      .order('created_at', { ascending: false })
-      .limit(500),
-    supabase
-      .from('products')
-      .select('id', { count: 'exact', head: true })
-      .eq('status', 'aktif'),
-  ]);
-
-  if (orderResult.error) throw orderResult.error;
-  if (productCountResult.error) throw productCountResult.error;
-
-  const orders = (orderResult.data ?? []) as ProductOrderRow[];
-  const active = orders.filter((row) =>
-    ACTIVE_PRODUCT_ORDER_STATUSES.includes(row.status),
-  );
-  const completed = orders.filter((row) => row.status === 'selesai');
-  const validOrders = orders.filter((row) => row.status !== 'dibatalkan');
-
-  return {
-    stats: [
-      {
-        key: 'pesanan',
-        label: 'Pesanan aktif',
-        value: active.length,
-        format: 'number',
-        hint: 'Sedang diproses',
-        badge: active.length > 0 ? 'Berjalan' : undefined,
-      },
-      {
-        key: 'belanja',
-        label: 'Total belanja',
-        value: sum(validOrders, (row) => number(row.total)),
-        format: 'currency',
-        hint: 'Pesanan tidak dibatalkan',
-      },
-      {
-        key: 'produk',
-        label: 'Produk tersedia',
-        value: productCountResult.count ?? 0,
-        format: 'number',
-        hint: 'Dari penjual aktif',
-      },
-      {
-        key: 'selesai',
-        label: 'Pesanan selesai',
-        value: completed.length,
-        format: 'number',
-        hint: 'Transaksi tuntas',
-      },
-    ],
-    chart: {
-      title: 'Belanja marketplace',
-      description: 'Nilai pesanan produk daur ulang',
-      format: 'currency',
-      rows: orders.map((row) => ({
-        date: row.created_at,
-        value: number(row.total),
-      })),
-    },
-    recent: orders.slice(0, 4).map((row) => ({
-      id: row.id,
-      title: `Pesanan ${row.nomor}`,
-      description: `Belanja marketplace · ${new Intl.NumberFormat('id-ID', {
-        style: 'currency',
-        currency: 'IDR',
-        maximumFractionDigits: 0,
-      }).format(number(row.total))}`,
-      date: row.created_at,
-      status: statusLabel(row.status, PRODUCT_ORDER_STATUS_LABELS),
-      tone: statusTone(row.status, PRODUCT_ORDER_STATUS_TONES),
-      href: '/pembeli/pesanan',
+      href: '/industri/pesanan',
     })),
   };
 }
@@ -666,7 +570,6 @@ async function loadSnapshot(
   profile: ProfileWithOrganization,
 ): Promise<DashboardSnapshot> {
   if (profile.role === 'warga') return loadWargaSnapshot(profile.id);
-  if (profile.role === 'pembeli') return loadPembeliSnapshot(profile.id);
   if (profile.role === 'admin') return loadAdminSnapshot();
 
   if (!profile.org_id) {
@@ -681,7 +584,7 @@ async function loadSnapshot(
   if (profile.role === 'bsi') {
     return loadBsiSnapshot(profile.org_id);
   }
-  return loadPengepulSnapshot(profile.org_id);
+  return loadIndustriSnapshot(profile.org_id);
 }
 
 export function useDashboardData(profile: ProfileWithOrganization | null) {

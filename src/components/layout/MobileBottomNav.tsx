@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 import type { AppRole } from '@/types/database';
 
 export function MobileBottomNav({ role }: { role: AppRole }) {
-  const items = NAVIGATION[role];
+  const items = NAVIGATION[role].filter((item) => !item.hidden);
 
   return (
     <div

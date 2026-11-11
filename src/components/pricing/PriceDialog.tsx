@@ -154,7 +154,7 @@ export function PriceDialog({
           icon={CalendarClock}
           hint={
             kind === 'jual'
-              ? 'Harga baru dipakai saat pengepul membuat pesanan setelah waktu ini.'
+              ? 'Harga baru dipakai saat industri membuat pesanan setelah waktu ini.'
               : 'Harga baru dipakai pada penimbangan setelah waktu ini.'
           }
           required

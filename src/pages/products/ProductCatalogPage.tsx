@@ -12,6 +12,7 @@ import {
 import { useAuth } from '@/auth/AuthProvider';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useCatalogProducts } from '@/hooks/useProducts';
+import { PRODUCT_CONDITION_LABELS, PRODUCT_CONDITIONS } from '@/lib/products';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
@@ -23,18 +24,20 @@ import { ProductCard } from '@/components/products/ProductCard';
 import { ProductOrderDialog } from '@/components/products/ProductOrderDialog';
 import type {
   DashboardStat,
+  ProductCondition,
   ProductOrderRecord,
   ProductRecord,
 } from '@/types/database';
 
 export function ProductCatalogPage({
-  variant = 'buyer',
+  variant = 'marketplace',
 }: {
   variant?: 'buyer' | 'marketplace';
 }) {
   const { profile } = useAuth();
   const [search, setSearch] = useState('');
   const [kategori, setKategori] = useState('semua');
+  const [kondisi, setKondisi] = useState<'semua' | ProductCondition>('semua');
   const [selectedProduct, setSelectedProduct] = useState<ProductRecord | null>(
     null,
   );
@@ -61,15 +64,18 @@ export function ProductCatalogPage({
   const filteredProducts = useMemo(() => {
     const keyword = search.trim().toLowerCase();
     return products.filter((product) => {
+      if (kondisi !== 'semua' && product.kondisi !== kondisi) return false;
       if (kategori !== 'semua' && product.kategori !== kategori) return false;
       if (!keyword) return true;
       return `${product.nama} ${product.kategori ?? ''} ${
-        product.org?.nama ?? product.penjual?.nama ?? ''
-      } ${product.deskripsi ?? ''}`
+        PRODUCT_CONDITION_LABELS[product.kondisi]
+      } ${product.org?.nama ?? product.penjual?.nama ?? ''} ${
+        product.deskripsi ?? ''
+      }`
         .toLowerCase()
         .includes(keyword);
     });
-  }, [products, kategori, search]);
+  }, [products, kategori, kondisi, search]);
 
   const sellers = new Set(
     products.map((product) => product.penjual_org_id ?? product.penjual_id),
@@ -96,7 +102,7 @@ export function ProductCatalogPage({
       label: 'Penjual',
       value: sellers,
       format: 'number',
-      hint: 'Warga & pengepul',
+      hint: 'Warga & industri',
     },
     {
       key: 'stok',
@@ -116,11 +122,11 @@ export function ProductCatalogPage({
 
   if (!profile) return null;
 
-  const isBuyer = profile.role === 'pembeli';
+  const isBuyer = profile.role === 'warga';
   const canBuy = isBuyer;
   const sellerPath =
-    profile.role === 'pengepul'
-      ? '/pengepul/produk'
+    profile.role === 'industri'
+      ? '/industri/produk'
       : profile.role === 'warga'
         ? '/warga/produk'
         : null;
@@ -136,15 +142,15 @@ export function ProductCatalogPage({
         }
         description={
           isMarketplace
-            ? 'Temukan produk daur ulang dari warga dan pengepul terverifikasi. Pesanan, pembayaran, dan pengiriman tercatat dalam satu alur.'
-            : 'Pilih produk daur ulang dari warga dan pengepul, lalu buat pesanan. Stok langsung dikunci untuk Anda.'
+            ? 'Temukan barang bekas dan produk upcycle dari warga serta industri terverifikasi. Pesanan, pembayaran, dan pengiriman tercatat dalam satu alur.'
+            : 'Pilih barang bekas atau produk upcycle dari warga dan industri, lalu buat pesanan. Stok langsung dikunci untuk Anda.'
         }
         backTo="/dashboard"
         backLabel="Kembali ke dashboard"
         actions={
           isBuyer ? (
             <Link
-              to="/pembeli/pesanan"
+              to="/warga/pesanan"
               className={buttonStyles({ variant: 'secondary', size: 'sm' })}
             >
               Pesanan saya
@@ -169,7 +175,7 @@ export function ProductCatalogPage({
             Pesanan {createdOrder.nomor} berhasil dibuat. Stok sudah dikunci
             untuk Anda.{' '}
             <Link
-              to="/pembeli/pesanan"
+              to="/warga/pesanan"
               className="font-bold underline underline-offset-2"
             >
               Bayar sekarang
@@ -220,6 +226,23 @@ export function ProductCatalogPage({
           </div>
         </div>
 
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {(['semua', ...PRODUCT_CONDITIONS] as const).map((item) => (
+            <button
+              key={item}
+              type="button"
+              onClick={() => setKondisi(item)}
+              className={`rounded-full px-3 py-1.5 text-[10px] font-semibold transition-colors ${
+                kondisi === item
+                  ? 'bg-ink text-white'
+                  : 'bg-[#f2f5f1] text-muted hover:bg-[#e9eee6] hover:text-ink'
+              }`}
+            >
+              {item === 'semua' ? 'Semua kondisi' : PRODUCT_CONDITION_LABELS[item]}
+            </button>
+          ))}
+        </div>
+
         <div className="mt-4">
           {productsQuery.isLoading && (
             <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
@@ -266,7 +289,7 @@ export function ProductCatalogPage({
                 description={
                   sellerPath
                     ? 'Tambahkan produk pertama Anda agar tampil di marketplace.'
-                    : 'Produk dari warga dan pengepul akan muncul di sini setelah dipublikasikan.'
+                    : 'Produk dari warga dan industri akan muncul di sini setelah dipublikasikan.'
                 }
                 action={
                   sellerPath ? (
@@ -312,7 +335,7 @@ export function ProductCatalogPage({
         <p className="px-1 text-[10px] text-muted">
           Menampilkan {filteredProducts.length} dari {products.length} produk
           aktif.
-          {!canBuy && ' Masuk sebagai pembeli untuk membuat pesanan.'}
+          {!canBuy && ' Masuk sebagai warga untuk membuat pesanan.'}
         </p>
       )}
 
