@@ -26,6 +26,11 @@ const DEMO_ACCOUNTS = [
 
 const DEMO_PASSWORD = 'Upcycle123!';
 
+// Panel akun demo tampil default (termasuk di build produksi/GitHub Pages).
+// Set VITE_SHOW_DEMO_ACCOUNTS=false saat build untuk menyembunyikannya.
+const SHOW_DEMO_ACCOUNTS =
+  import.meta.env.VITE_SHOW_DEMO_ACCOUNTS !== 'false';
+
 export function LoginPage() {
   const { signIn } = useAuth();
   const navigate = useNavigate();
@@ -153,7 +158,7 @@ export function LoginPage() {
         </Button>
       </form>
 
-      {import.meta.env.DEV && (
+      {SHOW_DEMO_ACCOUNTS && (
         <details className="group mt-5 rounded-2xl border border-dashed border-black/10 bg-[#fafbf8] px-4 py-3">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-2 text-[11px] font-semibold text-muted marker:hidden">
             <span className="inline-flex items-center gap-2">

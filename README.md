@@ -260,6 +260,11 @@ menerbitkannya setiap ada push ke `main` (bisa juga dijalankan manual dari tab
 Keduanya hanya dibaca saat build. Bila kosong, workflow tetap berjalan tetapi
 situs menampilkan layar konfigurasi dan log Actions memberi peringatan.
 
+Panel **Akun demo** di halaman login tampil secara default. Untuk
+menyembunyikannya di situs publik, buat repository **variable**
+`VITE_SHOW_DEMO_ACCOUNTS` bernilai `false`
+(**Settings → Secrets and variables → Actions → Variables**).
+
 ### 3. Sesuaikan URL Auth Supabase
 
 Tambahkan alamat Pages ke **Authentication → URL Configuration**:
@@ -293,8 +298,11 @@ Semua password: `Upcycle123!`
 | `bsi@upcycle.id` | petugas BSI Nusantara Hijau |
 | `industri@upcycle.id` | petugas CV Jaya Daur Ulang |
 
-Di mode development, halaman login menampilkan panel **Akun demo** untuk
-mengisi email/password otomatis.
+Halaman login menampilkan panel **Akun demo** untuk mengisi email/password
+otomatis, baik di development maupun build produksi. Panel itu bisa
+disembunyikan lewat env `VITE_SHOW_DEMO_ACCOUNTS=false` saat build (lihat
+[Deploy ke GitHub Pages](#deploy-ke-github-pages)). Tombol demo hanya mengisi
+kredensial seed; bila password akun diubah di Supabase, isinya tidak akan cocok.
 
 ## Peran dan navigasi
 
