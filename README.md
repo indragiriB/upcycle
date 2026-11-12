@@ -278,6 +278,8 @@ Tambahkan alamat Pages ke **Authentication → URL Configuration**:
 - `vite.config.ts` mendeteksi nama repo otomatis dan memakai base `/<repo>/`;
   untuk situs pengguna (`<user>.github.io`) base tetap `/`. Timpa manual lewat
   env `VITE_BASE_PATH` bila perlu.
+- `BrowserRouter` memakai `basename` dari `import.meta.env.BASE_URL`, jadi
+  route seperti `/masuk` otomatis menjadi `/<repo>/masuk` di Pages.
 - Build menghasilkan `404.html` (salinan `index.html`) agar deep link seperti
   `/marketplace` tidak 404 di GitHub Pages.
 - URL aset dan redirect email mengikuti `BASE_URL` lewat `src/lib/paths.ts`.
