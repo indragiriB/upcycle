@@ -1,4 +1,4 @@
-import { copyFileSync, existsSync } from 'node:fs';
+import { copyFileSync, existsSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath, URL } from 'node:url';
 import { defineConfig, type Plugin } from 'vite';
@@ -6,8 +6,14 @@ import react from '@vitejs/plugin-react';
 import tailwindcss from '@tailwindcss/vite';
 
 // GitHub Pages menyajikan situs proyek di /<nama-repo>/, sedangkan situs
-// pengguna (<user>.github.io) tetap di akar domain. Build lokal memakai '/'.
+// pengguna (<user>.github.io) dan custom domain tetap di akar. Keberadaan
+// public/CNAME menandakan situs memakai custom domain.
 // VITE_BASE_PATH dapat menimpa hasil deteksi otomatis ini.
+function hasCustomDomain(): boolean {
+  const file = join(process.cwd(), 'public', 'CNAME');
+  return existsSync(file) && readFileSync(file, 'utf8').trim().length > 0;
+}
+
 function resolveBase(): string {
   const override = process.env.VITE_BASE_PATH?.trim();
   if (override) {
@@ -17,6 +23,7 @@ function resolveBase(): string {
   const repo = process.env.GITHUB_REPOSITORY?.split('/')[1];
   if (!process.env.GITHUB_ACTIONS || !repo) return '/';
   if (repo.endsWith('.github.io')) return '/';
+  if (hasCustomDomain()) return '/';
 
   return `/${repo}/`;
 }

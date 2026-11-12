@@ -267,17 +267,41 @@ menyembunyikannya di situs publik, buat repository **variable**
 
 ### 3. Sesuaikan URL Auth Supabase
 
-Tambahkan alamat Pages ke **Authentication → URL Configuration**:
+Untuk situs Pages standar (`https://<user>.github.io/<repo>/`):
 
 - Site URL: `https://<user>.github.io/<repo>/`
 - Redirect URLs: `https://<user>.github.io/<repo>/masuk` dan
   `https://<user>.github.io/<repo>/atur-ulang-password`
 
+Jika memakai custom domain, ganti dengan domain tersebut (lihat langkah 4).
+
+### 4. (Opsional) Custom domain
+
+Contoh yang dipakai proyek ini: `https://upcycle.wecloud.my.id/`.
+
+1. **Settings → Pages → Custom domain** diisi `upcycle.wecloud.my.id`. Dengan
+   GitHub Actions tidak perlu file `CNAME`.
+2. Di DNS provider, buat record CNAME `upcycle` → `indragirib.github.io`
+   (tanpa nama repo). Subdomain tidak memakai A record/IP dan tidak perlu
+   child nameserver.
+3. `public/CNAME` berisi domain custom (`upcycle.wecloud.my.id`) membuat build
+   otomatis memakai base `/`, sehingga aset, router, dan redirect auth berada di
+   akar domain. Repository variable `VITE_BASE_PATH` bersifat opsional untuk
+   menimpa nilai itu.
+4. Ubah URL Auth Supabase ke `https://upcycle.wecloud.my.id/`,
+   `https://upcycle.wecloud.my.id/masuk`, dan
+   `https://upcycle.wecloud.my.id/atur-ulang-password`.
+5. Setelah DNS mengarah ke GitHub, aktifkan **Enforce HTTPS**. Sertifikat bisa
+   sampai ~1 jam; jika opsi belum muncul, Remove lalu Save ulang custom domain.
+6. Cek propagasi: `Resolve-DnsName upcycle.wecloud.my.id -Type CNAME` harus
+   menghasilkan `indragirib.github.io`.
+
 ### Catatan hosting
 
 - `vite.config.ts` mendeteksi nama repo otomatis dan memakai base `/<repo>/`;
-  untuk situs pengguna (`<user>.github.io`) base tetap `/`. Timpa manual lewat
-  env `VITE_BASE_PATH` bila perlu.
+  untuk situs pengguna (`<user>.github.io`) base tetap `/`. Saat file
+  `public/CNAME` ada (custom domain), base otomatis menjadi `/`. Nilai
+  `VITE_BASE_PATH` tetap bisa menimpa keduanya.
 - `BrowserRouter` memakai `basename` dari `import.meta.env.BASE_URL`, jadi
   route seperti `/masuk` otomatis menjadi `/<repo>/masuk` di Pages.
 - Build menghasilkan `404.html` (salinan `index.html`) agar deep link seperti

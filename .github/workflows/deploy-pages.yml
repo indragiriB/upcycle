@@ -37,6 +37,8 @@ jobs:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
           VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
           VITE_SHOW_DEMO_ACCOUNTS: ${{ vars.VITE_SHOW_DEMO_ACCOUNTS }}
+          # Set repo variable VITE_BASE_PATH=/ saat memakai custom domain.
+          VITE_BASE_PATH: ${{ vars.VITE_BASE_PATH }}
 
       - name: Peringatkan env Supabase yang kosong
         run: |
