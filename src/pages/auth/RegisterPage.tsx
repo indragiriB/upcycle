@@ -13,6 +13,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
 import { authErrorMessage } from '@/lib/auth-errors';
+import { absoluteAppUrl } from '@/lib/paths';
 import { supabase } from '@/lib/supabase';
 import { AuthLayout } from '@/pages/auth/AuthLayout';
 import { Button } from '@/components/ui/Button';
@@ -90,7 +91,7 @@ export function RegisterPage() {
       type: 'signup',
       email: confirmationEmail,
       options: {
-        emailRedirectTo: `${window.location.origin}/masuk`,
+        emailRedirectTo: absoluteAppUrl('/masuk'),
       },
     });
     setResending(false);

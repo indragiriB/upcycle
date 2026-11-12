@@ -215,7 +215,8 @@ Detail database, akun demo, dan keputusan RLS ada di
   - Site URL: `http://localhost:5173`
   - Redirect URLs: `http://localhost:5173/masuk` dan
     `http://localhost:5173/atur-ulang-password`
-  - Tambahkan URL production saat deploy.
+  - Tambahkan URL production saat deploy (lihat
+    [Deploy ke GitHub Pages](#deploy-ke-github-pages)).
 - Untuk pengujian cepat, **Authentication → Providers → Email** boleh
   mematikan “Confirm email”. Jika konfirmasi aktif, pengguna akan melihat layar
   “Cek email kamu”.
@@ -236,6 +237,47 @@ npm run typecheck   # TypeScript
 npm run build       # build produksi
 npm run preview     # pratinjau build
 ```
+
+## Deploy ke GitHub Pages
+
+Workflow `.github/workflows/deploy-pages.yml` membangun aplikasi dan
+menerbitkannya setiap ada push ke `main` (bisa juga dijalankan manual dari tab
+**Actions**).
+
+### 1. Aktifkan Pages
+
+**Settings → Pages → Build and deployment → Source: GitHub Actions**.
+
+### 2. Isi repository secrets
+
+**Settings → Secrets and variables → Actions → New repository secret**:
+
+| Nama | Nilai |
+| --- | --- |
+| `VITE_SUPABASE_URL` | URL proyek Supabase |
+| `VITE_SUPABASE_ANON_KEY` | anon/public key Supabase |
+
+Keduanya hanya dibaca saat build. Bila kosong, workflow tetap berjalan tetapi
+situs menampilkan layar konfigurasi dan log Actions memberi peringatan.
+
+### 3. Sesuaikan URL Auth Supabase
+
+Tambahkan alamat Pages ke **Authentication → URL Configuration**:
+
+- Site URL: `https://<user>.github.io/<repo>/`
+- Redirect URLs: `https://<user>.github.io/<repo>/masuk` dan
+  `https://<user>.github.io/<repo>/atur-ulang-password`
+
+### Catatan hosting
+
+- `vite.config.ts` mendeteksi nama repo otomatis dan memakai base `/<repo>/`;
+  untuk situs pengguna (`<user>.github.io`) base tetap `/`. Timpa manual lewat
+  env `VITE_BASE_PATH` bila perlu.
+- Build menghasilkan `404.html` (salinan `index.html`) agar deep link seperti
+  `/marketplace` tidak 404 di GitHub Pages.
+- URL aset dan redirect email mengikuti `BASE_URL` lewat `src/lib/paths.ts`.
+  Jangan menulis path absolut seperti `/upcycle-logo.svg` di komponen baru.
+- `npm run build` lokal tetap memakai base `/`.
 
 ## Akun demo
 

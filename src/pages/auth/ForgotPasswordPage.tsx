@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { AlertCircle, Mail, MailCheck } from 'lucide-react';
+import { absoluteAppUrl } from '@/lib/paths';
 import { supabase } from '@/lib/supabase';
 import { authErrorMessage } from '@/lib/auth-errors';
 import { AuthLayout } from '@/pages/auth/AuthLayout';
@@ -26,7 +27,7 @@ export function ForgotPasswordPage() {
     const { error: resetError } = await supabase.auth.resetPasswordForEmail(
       email.trim(),
       {
-        redirectTo: `${window.location.origin}/atur-ulang-password`,
+        redirectTo: absoluteAppUrl('/atur-ulang-password'),
       },
     );
     setSubmitting(false);

@@ -10,6 +10,7 @@ import {
 } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import type { Session } from '@supabase/supabase-js';
+import { absoluteAppUrl } from '@/lib/paths';
 import { isSupabaseConfigured, supabase } from '@/lib/supabase';
 import type { ProfileWithOrganization } from '@/types/database';
 
@@ -169,7 +170,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       email: input.email.trim(),
       password: input.password,
       options: {
-        emailRedirectTo: `${window.location.origin}/masuk`,
+        emailRedirectTo: absoluteAppUrl('/masuk'),
         data: {
           nama: input.nama.trim(),
         },

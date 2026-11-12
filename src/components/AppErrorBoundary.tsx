@@ -1,4 +1,5 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
+import { withBase } from '@/lib/paths';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 export class AppErrorBoundary extends Component<
@@ -22,7 +23,7 @@ export class AppErrorBoundary extends Component<
           <div className="w-full max-w-md rounded-[28px] border border-black/[0.04] bg-white p-7 text-center shadow-card sm:p-8">
             <div className="flex justify-center">
               <img
-                src="/upcycle-logo.svg"
+                src={withBase('upcycle-logo.svg')}
                 alt="Upcycle"
                 className="h-9 w-auto"
               />

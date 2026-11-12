@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import { withBase } from '@/lib/paths';
 import { cn } from '@/lib/utils';
 
 interface LogoProps {
@@ -10,7 +11,7 @@ interface LogoProps {
 export function Logo({ className, imageClassName, to = '/dashboard' }: LogoProps) {
   const image = (
     <img
-      src="/upcycle-logo.svg"
+      src={withBase('upcycle-logo.svg')}
       alt="Upcycle"
       className={cn('h-10 w-auto', imageClassName)}
     />

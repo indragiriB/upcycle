@@ -22,6 +22,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { absoluteAppUrl } from '@/lib/paths';
 import { supabase } from '@/lib/supabase';
 import { authErrorMessage } from '@/lib/auth-errors';
 import { cn, formatDateShort, mapsUrl } from '@/lib/utils';
@@ -213,7 +214,7 @@ export function ProfilePage() {
     setResetSending(true);
     setResetMessage(null);
     const { error } = await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: `${window.location.origin}/atur-ulang-password`,
+      redirectTo: absoluteAppUrl('/atur-ulang-password'),
     });
     setResetSending(false);
 

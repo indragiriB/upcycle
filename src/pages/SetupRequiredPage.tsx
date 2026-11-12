@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { withBase } from '@/lib/paths';
 import {
   ArrowUpRight,
   Check,
@@ -45,7 +46,7 @@ export function SetupRequiredPage() {
           <div className="flex flex-wrap items-center gap-3">
             <div className="inline-flex rounded-2xl bg-white px-4 py-3 shadow-2xl shadow-black/30">
               <img
-                src="/upcycle-logo.svg"
+                src={withBase('upcycle-logo.svg')}
                 alt="Upcycle"
                 className="h-9 w-auto"
               />

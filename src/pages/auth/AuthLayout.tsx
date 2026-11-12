@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react';
 import { MapPin, Recycle, ShoppingBag } from 'lucide-react';
 import { usePageTitle } from '@/hooks/usePageTitle';
+import { withBase } from '@/lib/paths';
 import { Logo } from '@/components/ui/Logo';
 
 const FEATURES = [
@@ -52,7 +53,7 @@ export function AuthLayout({
           <div className="relative">
             <div className="inline-flex rounded-2xl bg-white px-4 py-3 shadow-2xl shadow-black/30">
               <img
-                src="/upcycle-logo.svg"
+                src={withBase('upcycle-logo.svg')}
                 alt="Upcycle"
                 className="h-9 w-auto"
               />
