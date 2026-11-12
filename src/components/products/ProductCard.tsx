@@ -8,10 +8,13 @@ import type { ProductRecord } from '@/types/database';
 export function ProductCard({
   product,
   canBuy,
+  isOwner = false,
   onBuy,
 }: {
   product: ProductRecord;
   canBuy: boolean;
+  /** Produk milik pengguna yang sedang melihat; tidak boleh dibeli sendiri. */
+  isOwner?: boolean;
   onBuy?: (product: ProductRecord) => void;
 }) {
   const image = product.foto_urls[0] ?? null;
@@ -90,7 +93,11 @@ export function ProductCard({
             </p>
           </div>
 
-          {canBuy ? (
+          {isOwner ? (
+            <Badge tone="neutral" className="px-2.5 py-1 text-[9px]">
+              Produk Anda
+            </Badge>
+          ) : canBuy ? (
             <Button
               size="sm"
               disabled={soldOut}

@@ -323,6 +323,7 @@ export function ProductCatalogPage({
                   key={product.id}
                   product={product}
                   canBuy={canBuy}
+                  isOwner={product.penjual_id === profile.id}
                   onBuy={setSelectedProduct}
                 />
               ))}
