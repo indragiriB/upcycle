@@ -17,7 +17,13 @@ function hasCustomDomain(): boolean {
 function resolveBase(): string {
   const override = process.env.VITE_BASE_PATH?.trim();
   if (override) {
-    return override.endsWith('/') ? override : `${override}/`;
+    if (override.startsWith('/')) {
+      return override.endsWith('/') ? override : `${override}/`;
+    }
+    console.warn(
+      `[upcycle] VITE_BASE_PATH "${override}" diabaikan karena tidak diawali "/". ` +
+        'Gunakan nilai seperti "/" atau "/nama-repo/".',
+    );
   }
 
   const repo = process.env.GITHUB_REPOSITORY?.split('/')[1];
