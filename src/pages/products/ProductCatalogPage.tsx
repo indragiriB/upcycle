@@ -14,6 +14,7 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { useCatalogProducts } from '@/hooks/useProducts';
 import { PRODUCT_CONDITION_LABELS, PRODUCT_CONDITIONS } from '@/lib/products';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { MarketTabs } from '@/components/products/MarketTabs';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button, buttonStyles } from '@/components/ui/Button';
@@ -167,6 +168,8 @@ export function ProductCatalogPage({
           ) : undefined
         }
       />
+
+      {isBuyer && <MarketTabs />}
 
       {createdOrder && (
         <div className="flex items-start justify-between gap-3 rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3 text-[11px] leading-5 text-brand-900">

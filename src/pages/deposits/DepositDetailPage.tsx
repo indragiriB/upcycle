@@ -8,7 +8,6 @@ import {
   Check,
   Circle,
   Clock3,
-  ExternalLink,
   ImageIcon,
   MapPin,
   MessageCircle,
@@ -127,7 +126,10 @@ function CounterpartCard({
       deposit.nomor_wa,
       `Halo ${deposit.profiles?.nama ?? 'warga'}, saya petugas BSU terkait setoran ${deposit.estimasi_jenis}.`,
     );
-    const map = mapsUrl(deposit.lat, deposit.lng, deposit.alamat);
+    // Satu tautan lokasi saja: pakai tautan yang dibagikan warga bila ada,
+    // lalu jatuh ke koordinat/alamat.
+    const map =
+      deposit.lokasi_url ?? mapsUrl(deposit.lat, deposit.lng, deposit.alamat);
 
     return (
       <Card className="p-4 md:p-5">
@@ -189,18 +191,7 @@ function CounterpartCard({
                 className={buttonStyles({ variant: 'secondary', size: 'sm' })}
               >
                 <MapPin className="h-3.5 w-3.5" />
-                Buka peta
-              </a>
-            )}
-            {deposit.lokasi_url && (
-              <a
-                href={deposit.lokasi_url}
-                target="_blank"
-                rel="noreferrer"
-                className={buttonStyles({ variant: 'secondary', size: 'sm' })}
-              >
-                <ExternalLink className="h-3.5 w-3.5" />
-                Tautan lokasi
+                Buka lokasi
               </a>
             )}
           </div>
@@ -478,7 +469,7 @@ export function DepositDetailPage({ viewer }: { viewer: 'warga' | 'bsu' }) {
       )}
 
       <div className="grid gap-4 lg:grid-cols-[1.5fr_0.8fr]">
-        <div className="space-y-4">
+        <div className="min-w-0 space-y-4">
           <Card className="overflow-hidden">
             <div className="relative overflow-hidden bg-[#101a12] px-5 py-5">
               <div className="auth-grid absolute inset-0 opacity-60" />
@@ -850,7 +841,7 @@ export function DepositDetailPage({ viewer }: { viewer: 'warga' | 'bsu' }) {
           </Card>
         </div>
 
-        <aside className="space-y-4">
+        <aside className="min-w-0 space-y-4">
           <CounterpartCard
             viewer={viewer}
             deposit={deposit}

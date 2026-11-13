@@ -24,7 +24,57 @@ export function DepositItemsTable({ deposit }: { deposit: DepositRecord }) {
 
   return (
     <div className="space-y-3">
-      <div className="-mx-1 overflow-x-auto">
+      {/* Di HP tabel lebar mudah membuat halaman ikut melebar, jadi item
+          ditampilkan sebagai kartu bertumpuk. */}
+      <div className="space-y-2 md:hidden">
+        {items.map((item) => {
+          const waste = item.waste_types;
+          const adjusted =
+            toNumber(item.harga_per_kg) !==
+            toNumber(item.harga_acuan_per_kg);
+          return (
+            <div
+              key={item.id}
+              className="min-w-0 rounded-2xl border border-black/[0.05] px-3.5 py-3"
+            >
+              <div className="flex items-start justify-between gap-3">
+                <div className="flex min-w-0 items-start gap-2">
+                  <span
+                    aria-hidden="true"
+                    className="mt-1.5 h-2 w-2 shrink-0 rounded-full"
+                    style={{ backgroundColor: waste?.warna ?? '#22C55E' }}
+                  />
+                  <div className="min-w-0">
+                    <p className="break-words text-[12px] font-semibold text-ink">
+                      {waste?.nama ?? 'Jenis sampah'}
+                    </p>
+                    <p className="mt-0.5 text-[10px] text-muted">
+                      {formatNumber(toNumber(item.berat_final_kg), 2)} kg ×{' '}
+                      {formatCurrency(toNumber(item.harga_per_kg))}/kg
+                    </p>
+                    {adjusted && (
+                      <p className="mt-0.5 text-[9px] leading-4 text-amber-700">
+                        Harga acuan{' '}
+                        {formatCurrency(toNumber(item.harga_acuan_per_kg))}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <p className="shrink-0 text-[11px] font-bold text-ink">
+                  {formatCurrency(toNumber(item.subtotal))}
+                </p>
+              </div>
+              {item.alasan_penyesuaian && (
+                <p className="mt-2 break-words rounded-xl bg-amber-50 px-2.5 py-1.5 text-[9px] leading-4 text-amber-800">
+                  Penyesuaian: {item.alasan_penyesuaian}
+                </p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      <div className="hidden overflow-x-auto md:block">
         <table className="w-full min-w-[560px] text-left text-[11px]">
           <thead>
             <tr className="text-[9px] font-bold uppercase tracking-[0.1em] text-muted">
@@ -90,14 +140,14 @@ export function DepositItemsTable({ deposit }: { deposit: DepositRecord }) {
             </dd>
           </div>
           {toNumber(deposit.potongan) > 0 && (
-            <div className="flex items-center justify-between gap-3">
-              <dt className="text-muted">
+            <div className="flex items-start justify-between gap-3">
+              <dt className="min-w-0 text-muted">
                 Potongan
                 {deposit.alasan_potongan
                   ? ` · ${deposit.alasan_potongan}`
                   : ''}
               </dt>
-              <dd className="font-semibold text-red-600">
+              <dd className="shrink-0 font-semibold text-red-600">
                 −{formatCurrency(toNumber(deposit.potongan))}
               </dd>
             </div>

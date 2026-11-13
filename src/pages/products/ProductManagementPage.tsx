@@ -26,6 +26,7 @@ import {
   formatDateTime,
 } from '@/lib/utils';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { MarketTabs } from '@/components/products/MarketTabs';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button, buttonStyles } from '@/components/ui/Button';
@@ -347,6 +348,8 @@ function ProductManagementContent({
           </>
         }
       />
+
+      {profile.role === 'warga' && <MarketTabs />}
 
       {notice && (
         <div

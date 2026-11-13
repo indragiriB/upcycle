@@ -18,6 +18,7 @@ import { Badge } from '@/components/ui/Badge';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { buttonStyles } from '@/components/ui/Button';
+import { SetorTabs } from '@/components/deposits/SetorTabs';
 
 export function WastePricesPage() {
   const [search, setSearch] = useState('');
@@ -114,6 +115,8 @@ export function WastePricesPage() {
           </Link>
         }
       />
+
+      <SetorTabs />
 
       <div className="grid gap-3 sm:grid-cols-3">
         {[
@@ -289,7 +292,9 @@ export function WastePricesPage() {
                     </div>
 
                     <Link
-                      to="/warga/setor"
+                      to={`/warga/setor?jenis=${encodeURIComponent(
+                        group.wasteTypeId,
+                      )}`}
                       className="mt-3 inline-flex items-center gap-1.5 text-[10px] font-semibold text-brand-700 transition-colors hover:text-brand-800"
                     >
                       Setor jenis ini

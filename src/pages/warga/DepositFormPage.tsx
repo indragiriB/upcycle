@@ -6,7 +6,7 @@ import {
   type ChangeEvent,
   type FormEvent,
 } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 import {
   AlertCircle,
   ArrowRight,
@@ -34,6 +34,13 @@ import {
   uploadDepositPhoto,
   validateDepositPhoto,
 } from '@/lib/deposit-storage';
+import {
+  clearDepositDraft,
+  readDepositDraft,
+  readLastWhatsApp,
+  rememberWhatsApp,
+  saveDepositDraft,
+} from '@/lib/deposit-draft';
 import { isValidWhatsApp, normalizedWhatsApp } from '@/lib/deposits';
 import {
   formatCurrency,
@@ -48,28 +55,48 @@ import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
 import { Textarea } from '@/components/ui/Textarea';
 import { Badge } from '@/components/ui/Badge';
+import { SetorTabs } from '@/components/deposits/SetorTabs';
 import type { DepositMethod } from '@/types/database';
 
 export function DepositFormPage() {
   const { profile } = useAuth();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const appliedQuery = useRef(false);
 
   const bsuQuery = useVerifiedBsuOrganizations();
   const wasteTypesQuery = useWasteTypes();
   const pricesQuery = useActiveBuyPrices();
   const createDeposit = useCreateDeposit();
 
-  const [bsuId, setBsuId] = useState('');
-  const [metode, setMetode] = useState<DepositMethod>('jemput');
-  const [wasteTypeId, setWasteTypeId] = useState('');
-  const [berat, setBerat] = useState('');
-  const [nomorWa, setNomorWa] = useState('');
-  const [alamat, setAlamat] = useState('');
-  const [lokasiUrl, setLokasiUrl] = useState('');
-  const [lat, setLat] = useState<number | null>(null);
-  const [lng, setLng] = useState<number | null>(null);
-  const [catatan, setCatatan] = useState('');
+  const [draft] = useState(() =>
+    profile ? readDepositDraft(profile.id) : null,
+  );
+  const [restoredDraft, setRestoredDraft] = useState(
+    Boolean(
+      draft &&
+        (draft.wasteTypeId ||
+          draft.berat ||
+          draft.alamat ||
+          draft.lokasiUrl ||
+          draft.catatan),
+    ),
+  );
+  const [bsuId, setBsuId] = useState(draft?.bsuId ?? '');
+  const [metode, setMetode] = useState<DepositMethod>(
+    draft?.metode ?? 'jemput',
+  );
+  const [wasteTypeId, setWasteTypeId] = useState(draft?.wasteTypeId ?? '');
+  const [berat, setBerat] = useState(draft?.berat ?? '');
+  const [nomorWa, setNomorWa] = useState(
+    draft?.nomorWa || (profile ? readLastWhatsApp(profile.id) : ''),
+  );
+  const [alamat, setAlamat] = useState(draft?.alamat ?? '');
+  const [lokasiUrl, setLokasiUrl] = useState(draft?.lokasiUrl ?? '');
+  const [lat, setLat] = useState<number | null>(draft?.lat ?? null);
+  const [lng, setLng] = useState<number | null>(draft?.lng ?? null);
+  const [catatan, setCatatan] = useState(draft?.catatan ?? '');
   const [photo, setPhoto] = useState<File | null>(null);
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [locationMessage, setLocationMessage] = useState<string | null>(null);
@@ -88,6 +115,61 @@ export function DepositFormPage() {
       setBsuId(bsuOptions[0].id);
     }
   }, [bsuId, bsuOptions]);
+
+  // Jenis/BSU yang dipilih dari halaman harga ikut terbawa ke form.
+  useEffect(() => {
+    if (appliedQuery.current) return;
+    if (bsuQuery.isLoading || wasteTypesQuery.isLoading) return;
+    appliedQuery.current = true;
+
+    const jenis = searchParams.get('jenis');
+    if (jenis && wasteTypes.some((waste) => waste.id === jenis)) {
+      setWasteTypeId(jenis);
+    }
+    const bsu = searchParams.get('bsu');
+    if (bsu && bsuOptions.some((option) => option.id === bsu)) {
+      setBsuId(bsu);
+    }
+  }, [
+    bsuOptions,
+    bsuQuery.isLoading,
+    searchParams,
+    wasteTypes,
+    wasteTypesQuery.isLoading,
+  ]);
+
+  // Simpan draft agar isian tidak hilang saat halaman ter-refresh di HP.
+  useEffect(() => {
+    if (!profile) return;
+    const timeout = window.setTimeout(() => {
+      saveDepositDraft(profile.id, {
+        bsuId,
+        metode,
+        wasteTypeId,
+        berat,
+        nomorWa,
+        alamat,
+        lokasiUrl,
+        lat,
+        lng,
+        catatan,
+      });
+    }, 500);
+    return () => window.clearTimeout(timeout);
+  }, [
+    profile,
+    bsuId,
+    metode,
+    wasteTypeId,
+    berat,
+    nomorWa,
+    alamat,
+    lokasiUrl,
+    lat,
+    lng,
+    catatan,
+  ]);
+
 
   useEffect(() => {
     if (!photo) {
@@ -158,6 +240,24 @@ export function DepositFormPage() {
     );
   };
 
+  const handleResetDraft = () => {
+    if (profile) clearDepositDraft(profile.id);
+    setBsuId(bsuOptions[0]?.id ?? '');
+    setMetode('jemput');
+    setWasteTypeId('');
+    setBerat('');
+    setNomorWa(profile ? readLastWhatsApp(profile.id) : '');
+    setAlamat('');
+    setLokasiUrl('');
+    setLat(null);
+    setLng(null);
+    setCatatan('');
+    setPhoto(null);
+    setLocationMessage(null);
+    setError(null);
+    setRestoredDraft(false);
+  };
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setError(null);
@@ -167,7 +267,7 @@ export function DepositFormPage() {
       return;
     }
     if (!selectedWaste) {
-      setError('Pilih perkiraan jenis sampah.');
+      setError('Pilih jenis sampah.');
       return;
     }
     const weight = Number(berat);
@@ -233,6 +333,8 @@ export function DepositFormPage() {
         replace: true,
         state: { created: true },
       });
+      clearDepositDraft(profile.id);
+      rememberWhatsApp(profile.id, normalizedWhatsApp(nomorWa));
     } catch (failure) {
       setError(
         failure instanceof Error
@@ -249,7 +351,7 @@ export function DepositFormPage() {
       <PageHeader
         eyebrow="Setor sampah"
         title="Buat setoran baru"
-        description="Pilih BSU, tentukan metode setor, dan lampirkan perkiraan jenis serta berat sampahmu."
+        description="Pilih BSU, tentukan metode setor, lalu isi jenis dan perkiraan berat sampahmu."
         backTo="/dashboard"
         backLabel="Kembali ke dashboard"
         actions={
@@ -258,6 +360,25 @@ export function DepositFormPage() {
           </Badge>
         }
       />
+
+      <SetorTabs />
+
+      {restoredDraft && (
+        <div className="flex flex-wrap items-center justify-between gap-2 rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3 text-[11px] leading-5 text-brand-900">
+          <p className="flex items-start gap-2">
+            <Info className="mt-0.5 h-4 w-4 shrink-0" />
+            Draft setoran terakhirmu dipulihkan. Isian tetap tersimpan selama
+            kamu berpindah halaman.
+          </p>
+          <button
+            type="button"
+            onClick={handleResetDraft}
+            className="shrink-0 rounded-full px-2.5 py-1 text-[10px] font-semibold text-brand-800 transition-colors hover:bg-brand-100"
+          >
+            Mulai baru
+          </button>
+        </div>
+      )}
 
       <form
         onSubmit={(event) => void handleSubmit(event)}
@@ -273,7 +394,7 @@ export function DepositFormPage() {
               <div>
                 <h2 className="text-sm font-bold text-ink">Tujuan setoran</h2>
                 <p className="text-[11px] text-muted">
-                  Pilih BSU dan perkiraan jenis sampah yang akan disetor.
+                  Pilih BSU dan jenis sampah yang akan disetor.
                 </p>
               </div>
             </div>
@@ -301,7 +422,7 @@ export function DepositFormPage() {
               </Select>
 
               <Select
-                label="Perkiraan jenis sampah"
+                label="Jenis sampah"
                 value={wasteTypeId}
                 onChange={(event) => setWasteTypeId(event.target.value)}
                 disabled={wasteTypesQuery.isLoading}

@@ -7,9 +7,10 @@ import {
   MapPin,
   Package,
   Recycle,
-  ShoppingBag,
   Store,
   Tags,
+  UserRound,
+  Users,
   Wallet,
   Warehouse,
   type LucideIcon,
@@ -31,21 +32,19 @@ export interface PrimaryAction {
   icon: LucideIcon;
 }
 
+const ALL_ROLES: AppRole[] = ['warga', 'bsu', 'bsi', 'industri', 'admin'];
+
+/**
+ * Navigasi utama sengaja dibuat sesingkat mungkin. Halaman pendukung
+ * (harga, riwayat, produk, pesanan) tetap tersedia lewat tab di dalam
+ * halaman utama terkait.
+ */
 export const NAVIGATION: Record<AppRole, AppNavItem[]> = {
   warga: [
     { label: 'Dashboard', shortLabel: 'Beranda', to: '/dashboard', icon: LayoutGrid, end: true },
     { label: 'Setor sampah', shortLabel: 'Setor', to: '/warga/setor', icon: Recycle },
-    { label: 'Harga BSU', shortLabel: 'Harga', to: '/warga/harga', icon: Tags },
-    { label: 'Riwayat setoran', shortLabel: 'Riwayat', to: '/warga/riwayat', icon: History },
-    { label: 'Produk saya', shortLabel: 'Produk', to: '/warga/produk', icon: Package },
     { label: 'Marketplace', shortLabel: 'Market', to: '/marketplace', icon: Store },
-    {
-      label: 'Pesanan saya',
-      shortLabel: 'Pesanan',
-      to: '/warga/pesanan',
-      icon: ShoppingBag,
-      hidden: true,
-    },
+    { label: 'Akun', shortLabel: 'Akun', to: '/profile', icon: UserRound },
   ],
   bsu: [
     { label: 'Dashboard', shortLabel: 'Beranda', to: '/dashboard', icon: LayoutGrid, end: true },
@@ -73,7 +72,44 @@ export const NAVIGATION: Record<AppRole, AppNavItem[]> = {
     { label: 'Dashboard', shortLabel: 'Beranda', to: '/dashboard', icon: LayoutGrid, end: true },
     { label: 'Jenis sampah', shortLabel: 'Sampah', to: '/admin/jenis-sampah', icon: Recycle },
     { label: 'Verifikasi', shortLabel: 'Verifikasi', to: '/admin/organisasi', icon: BadgeCheck },
+    { label: 'Pengguna', shortLabel: 'Pengguna', to: '/admin/pengguna', icon: Users },
   ],
+};
+
+/**
+ * Otorisasi rute tidak boleh bergantung pada item navigasi, karena beberapa
+ * halaman pendukung tidak lagi tampil sebagai tab utama.
+ */
+export const ROUTE_ROLES: Record<string, AppRole[]> = {
+  '/dashboard': ALL_ROLES,
+  '/profile': ALL_ROLES,
+  '/marketplace': ALL_ROLES,
+  '/pembeli/katalog': ALL_ROLES,
+  '/pembeli/pesanan': ['warga'],
+  '/warga/setor': ['warga'],
+  '/warga/harga': ['warga'],
+  '/warga/riwayat': ['warga'],
+  '/warga/produk': ['warga'],
+  '/warga/pesanan': ['warga'],
+  '/bsu/setoran': ['bsu'],
+  '/bsu/jemput': ['bsu'],
+  '/bsu/harga': ['bsu'],
+  '/bsu/kas': ['bsu'],
+  '/bsi/setoran': ['bsi'],
+  '/bsi/stok': ['bsi'],
+  '/bsi/pesanan': ['bsi'],
+  '/bsi/kas': ['bsi'],
+  '/industri/stok': ['industri'],
+  '/industri/pesanan': ['industri'],
+  '/industri/kas': ['industri'],
+  '/industri/produk': ['industri'],
+  '/pengepul/stok': ['industri'],
+  '/pengepul/pesanan': ['industri'],
+  '/pengepul/kas': ['industri'],
+  '/pengepul/produk': ['industri'],
+  '/admin/jenis-sampah': ['admin'],
+  '/admin/organisasi': ['admin'],
+  '/admin/pengguna': ['admin'],
 };
 
 export const PRIMARY_ACTIONS: Record<AppRole, PrimaryAction> = {
@@ -84,10 +120,19 @@ export const PRIMARY_ACTIONS: Record<AppRole, PrimaryAction> = {
   admin: { label: 'Verifikasi organisasi', to: '/admin/organisasi', icon: BadgeCheck },
 };
 
+/** Tujuan tombol "Lihat semua" pada kartu aktivitas terbaru. */
+export const ACTIVITY_LINKS: Record<AppRole, PrimaryAction> = {
+  warga: { label: 'Riwayat setoran', to: '/warga/riwayat', icon: History },
+  bsu: { label: 'Antrean setoran', to: '/bsu/setoran', icon: Inbox },
+  bsi: { label: 'Data masuk', to: '/bsi/setoran', icon: Inbox },
+  industri: { label: 'Pesanan', to: '/industri/pesanan', icon: ClipboardList },
+  admin: { label: 'Verifikasi organisasi', to: '/admin/organisasi', icon: BadgeCheck },
+};
+
 export function getAllowedRolesForPath(path: string): AppRole[] {
-  if (path === '/marketplace') {
-    return ['warga', 'bsu', 'bsi', 'industri', 'admin'];
-  }
+  const explicit = ROUTE_ROLES[path];
+  if (explicit) return explicit;
+
   return (Object.keys(NAVIGATION) as AppRole[]).filter((role) =>
     NAVIGATION[role].some((item) => item.to === path),
   );

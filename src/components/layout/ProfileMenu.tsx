@@ -4,7 +4,6 @@ import {
   ChevronDown,
   LayoutDashboard,
   LogOut,
-  Settings2,
   UserRound,
 } from 'lucide-react';
 import { useClickOutside } from '@/hooks/useClickOutside';
@@ -92,15 +91,6 @@ export function ProfileMenu({
 
           <div className="p-2">
             <Link
-              to="/profile"
-              role="menuitem"
-              onClick={() => setOpen(false)}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold text-ink transition-colors hover:bg-[#f6f8f5]"
-            >
-              <UserRound className="h-4 w-4 text-muted" />
-              Profil saya
-            </Link>
-            <Link
               to="/dashboard"
               role="menuitem"
               onClick={() => setOpen(false)}
@@ -115,8 +105,8 @@ export function ProfileMenu({
               onClick={() => setOpen(false)}
               className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-semibold text-ink transition-colors hover:bg-[#f6f8f5]"
             >
-              <Settings2 className="h-4 w-4 text-muted" />
-              Pengaturan akun
+              <UserRound className="h-4 w-4 text-muted" />
+              Akun saya
             </Link>
           </div>
 

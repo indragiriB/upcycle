@@ -16,10 +16,8 @@ import { RoleOverviewCard } from '@/components/dashboard/RoleOverviewCard';
 import { PartnerListCard } from '@/components/dashboard/PartnerListCard';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
-import { Badge } from '@/components/ui/Badge';
 import { Button } from '@/components/ui/Button';
-import { PRIMARY_ACTIONS } from '@/config/navigation';
-import { ROLE_LABELS } from '@/lib/roles';
+import { ACTIVITY_LINKS, PRIMARY_ACTIONS } from '@/config/navigation';
 import { DEFAULT_CENTER } from '@/lib/geo';
 import { firstName } from '@/lib/utils';
 import type { AppRole, ChartRange } from '@/types/database';
@@ -73,6 +71,7 @@ export function DashboardPage() {
   }).format(now);
   const snapshot = dashboardQuery.data;
   const primaryAction = PRIMARY_ACTIONS[profile.role];
+  const activityLink = ACTIVITY_LINKS[profile.role];
 
   return (
     <div className="space-y-4">
@@ -97,9 +96,6 @@ export function DashboardPage() {
             <CalendarDays className="h-3.5 w-3.5 text-brand-600" />
             {dateLabel}
           </span>
-          <Badge tone="green" dot>
-            {ROLE_LABELS[profile.role]}
-          </Badge>
         </div>
       </header>
 
@@ -175,6 +171,7 @@ export function DashboardPage() {
           <RecentActivityCard
             items={snapshot?.recent ?? []}
             primaryAction={primaryAction}
+            viewAllTo={activityLink.to}
             loading={dashboardQuery.isLoading}
             error={dashboardQuery.isError}
             onRetry={() => void dashboardQuery.refetch()}

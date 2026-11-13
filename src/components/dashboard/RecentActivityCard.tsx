@@ -17,18 +17,18 @@ import type { PrimaryAction } from '@/config/navigation';
 export function RecentActivityCard({
   items,
   primaryAction,
+  viewAllTo,
   loading,
   error,
   onRetry,
 }: {
   items: DashboardRecentItem[];
   primaryAction: PrimaryAction;
+  viewAllTo: string;
   loading: boolean;
   error: boolean;
   onRetry: () => void;
 }) {
-  const viewAllHref = items[0]?.href ?? primaryAction.to;
-
   return (
     <Card className="p-4 md:p-5">
       <div className="flex items-center justify-between gap-3">
@@ -45,7 +45,7 @@ export function RecentActivityCard({
         </div>
         {items.length > 0 && (
           <Link
-            to={viewAllHref}
+            to={viewAllTo}
             className="inline-flex shrink-0 items-center gap-1 rounded-full px-2.5 py-1.5 text-[11px] font-semibold text-brand-700 transition-colors hover:bg-brand-50"
           >
             Lihat semua

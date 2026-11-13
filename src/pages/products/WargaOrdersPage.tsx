@@ -17,6 +17,7 @@ import {
 } from '@/hooks/useProducts';
 import { PRODUCT_ORDER_STATUS_LABELS } from '@/lib/status';
 import { PageHeader } from '@/components/ui/PageHeader';
+import { MarketTabs } from '@/components/products/MarketTabs';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Button, buttonStyles } from '@/components/ui/Button';
@@ -166,6 +167,8 @@ export function WargaOrdersPage() {
           </Link>
         }
       />
+
+      <MarketTabs />
 
       {notice && (
         <div

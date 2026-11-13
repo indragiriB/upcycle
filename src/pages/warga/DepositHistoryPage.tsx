@@ -29,6 +29,7 @@ import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { StatCard, StatCardSkeleton } from '@/components/dashboard/StatCard';
 import { DepositCard } from '@/components/deposits/DepositCard';
+import { SetorTabs } from '@/components/deposits/SetorTabs';
 import type { DashboardStat, DepositStatus } from '@/types/database';
 
 type HistoryFilter = 'semua' | 'aktif' | 'selesai';
@@ -145,6 +146,8 @@ export function DepositHistoryPage() {
           </Link>
         }
       />
+
+      <SetorTabs />
 
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
         {depositsQuery.isLoading
