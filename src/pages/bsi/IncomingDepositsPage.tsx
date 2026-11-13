@@ -49,9 +49,9 @@ function matchesFilter(deposit: BsiIncomingDeposit, filter: IncomingFilter) {
   if (filter === 'perlu_aksi') return deposit.status === 'dikirim_ke_bsi';
   if (filter === 'dipublikasikan') return deposit.status === 'dipublikasikan';
   return (
-    deposit.status === 'dibeli_pengepul' ||
+    deposit.status === 'dibeli_industri' ||
     deposit.status === 'diambil_bsi' ||
-    deposit.status === 'diambil_pengepul'
+    deposit.status === 'diambil_industri'
   );
 }
 

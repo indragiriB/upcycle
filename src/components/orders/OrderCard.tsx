@@ -39,12 +39,12 @@ export function OrderCard({
 }) {
   const counterpart =
     viewer === 'bsi'
-      ? order.pengepul?.nama ?? 'Industri'
+      ? order.industri?.nama ?? 'Industri'
       : order.bsi?.nama ?? 'BSI';
   const pickups = order.pickups ?? [];
   const hasActiveIndustriPickup = pickups.some(
     (pickup) =>
-      pickup.tipe === 'pengepul_ke_bsi' &&
+      pickup.tipe === 'industri_ke_bsi' &&
       (pickup.status === 'dijadwalkan' ||
         pickup.status === 'dalam_perjalanan'),
   );

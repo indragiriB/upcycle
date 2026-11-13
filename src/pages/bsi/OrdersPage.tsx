@@ -86,7 +86,7 @@ export function BsiOrdersPage() {
       const items = (order.order_items ?? [])
         .map((item) => item.waste_types?.nama ?? '')
         .join(' ');
-      return `${order.nomor} ${order.pengepul?.nama ?? ''} ${items}`
+      return `${order.nomor} ${order.industri?.nama ?? ''} ${items}`
         .toLowerCase()
         .includes(keyword);
     });

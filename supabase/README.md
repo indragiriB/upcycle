@@ -24,7 +24,8 @@ Jalankan **berurutan** di SQL Editor Supabase (atau lewat Supabase CLI):
 | 14 | `migrations/20261109000300_marketplace_kondisi.sql` | kolom `products.kondisi` dan `product_order_items.kondisi_produk` (`bekas`/`upcycle`) |
 | 15 | `migrations/20261109000400_rls_industri.sql` | policy RLS untuk peran dan organisasi industri |
 | 16 | `migrations/20261109000500_rpc_industri.sql` | RPC pesanan/stok/produk versi peran warga & industri |
-| 17 | `seed.sql` | data contoh dan akun demo |
+| 17 | `migrations/20261109000600_rename_pengepul_to_industri.sql` | rename kolom/enum/fungsi/RPC internal `pengepul` → `industri` |
+| 18 | `seed.sql` | data contoh dan akun demo |
 
 > `seed.sql` hanya untuk database baru/kosong. Menjalankannya ulang dapat
 > menabrak constraint unik akun/auth.
@@ -73,8 +74,8 @@ Organisasi contoh: **BSU Melati**, **BSU Kenanga**, **BSI Nusantara Hijau**,
   `20261106001000_order_rpcs.sql`.
 - **Pengambilan** dipisah dua fase: BSI menjadwalkan pengambilan dari tiap BSU
   (`bsi_ke_bsu`), lalu industri menjadwalkan pengambilan di BSI
-  (`pengepul_ke_bsi`, nama enum lama dipertahankan). Menyelesaikan pengambilan
-  industri menutup pesanan dan menandai setoran asal `diambil_pengepul`;
+  (`industri_ke_bsi`). Menyelesaikan pengambilan
+  industri menutup pesanan dan menandai setoran asal `diambil_industri`;
   pengambilan BSI menandai `diambil_bsi`.
 - **Pesanan produk marketplace** memakai `create_product_order`: hanya warga,
   satu penjual per pesanan, produk tidak boleh milik sendiri, dan stok langsung
@@ -85,12 +86,12 @@ Organisasi contoh: **BSU Melati**, **BSU Kenanga**, **BSI Nusantara Hijau**,
 - **Kondisi marketplace** disimpan di `products.kondisi` dan disalin ke
   `product_order_items.kondisi_produk` saat pesanan dibuat. Nilai yang dipakai:
   `upcycle` dan `bekas`. Tidak ada kategori sembako, kredit, atau cicilan.
-- **Peran lama** `pembeli` dan `pengepul` tetap ada sebagai nilai enum
-  PostgreSQL yang deprecated agar recreating enum tidak berisiko. Seluruh baris
-  dimigrasikan ke `warga`/`industri`, trigger `handle_new_user` hanya membuat
-  `warga`, dan kode aplikasi tidak lagi memakai nilai lama. Nama kolom internal
-  seperti `pembeli_id`, `pengepul_id`, `dibeli_pengepul`, dan `diambil_pengepul`
-  dipertahankan.
+- **Peran lama** `pembeli` dan `pengepul` tetap ada di enum `app_role` dan
+  `org_type` sebagai nilai deprecated agar enum tidak perlu dibangun ulang.
+  Seluruh baris sudah dimigrasikan ke `warga`/`industri`, trigger
+  `handle_new_user` hanya membuat `warga`, dan kode aplikasi tidak memakai nilai
+  lama. Nama kolom, nilai enum status/pengambilan, fungsi, dan RPC internal
+  sudah diganti ke `industri` oleh migrasi 17.
 - **Master jenis sampah** dikelola admin lewat insert/update `waste_types`.
   Jenis nonaktif tetap tersimpan untuk riwayat tetapi tidak muncul pada pilihan
   baru.
@@ -104,7 +105,7 @@ Organisasi contoh: **BSU Melati**, **BSU Kenanga**, **BSI Nusantara Hijau**,
   - `schedule_deposit_pickup`, `confirm_deposit`, `correct_ledger_entry`
   - `create_stock_order(...)`, `pay_stock_order(...)`, `cancel_stock_order(...)`
   - `schedule_order_bsu_pickup(...)`,
-    `schedule_order_pengepul_pickup(...)`, `update_pickup_status(...)`
+    `schedule_order_industri_pickup(...)`, `update_pickup_status(...)`
   - `create_product_order(...)`, `pay_product_order(...)`,
     `cancel_product_order(...)`, `ship_product_order(...)`,
     `complete_product_order(...)`
@@ -160,8 +161,8 @@ view/RLS yang sudah ada ditambah RPC baru:
 | Industri membayar | RPC `pay_stock_order` | pemilik pesanan; status `menunggu_pembayaran`; menulis kas BSI & industri |
 | Membatalkan pesanan | RPC `cancel_stock_order` | BSI/industri pemilik; hanya sebelum dibayar; stok dikembalikan |
 | BSI menjadwalkan ambil dari BSU | RPC `schedule_order_bsu_pickup` | status `dibayar`/`diproses`; satu jadwal per BSU |
-| Industri menjadwalkan ambil di BSI | RPC `schedule_order_pengepul_pickup` | status `diproses` (nama RPC lama dipertahankan) |
-| Menyelesaikan pengambilan | RPC `update_pickup_status` | BSI/BSU untuk rute `bsi_ke_bsu`; BSI/industri untuk rute `pengepul_ke_bsi` |
+| Industri menjadwalkan ambil di BSI | RPC `schedule_order_industri_pickup` | status `diproses` |
+| Menyelesaikan pengambilan | RPC `update_pickup_status` | BSI/BSU untuk rute `bsi_ke_bsu`; BSI/industri untuk rute `industri_ke_bsi` |
 | BSI/industri mencatat biaya | insert langsung `ledger_entries` | role org terkait, `arah = 'keluar'`, `kategori = 'operasional'`, tanpa ref |
 | BSI/industri mengoreksi kas | RPC `correct_ledger_entry` | membuat entri pembalik; entri `koreksi` tidak bisa dikoreksi ulang |
 
@@ -172,7 +173,7 @@ Catatan perilaku:
   dibatalkan.
 - `pay_stock_order` menulis dua entri kas dalam transaksi yang sama:
   `penjualan_stok` masuk untuk BSI dan `pembelian_stok` keluar untuk industri.
-- `update_pickup_status` menstempel `diambil_bsi_at` / `diambil_pengepul_at`
+- `update_pickup_status` menstempel `diambil_bsi_at` / `diambil_industri_at`
   pada setoran asal dan menutup pesanan saat pengambilan industri selesai.
 - Industri baru dapat menjadwalkan pengambilan di BSI setelah seluruh rute
   `bsi_ke_bsu` pesanan tersebut selesai. Saat rute terakhir selesai, industri
@@ -259,7 +260,7 @@ from pg_proc
 where pronamespace = 'public'::regnamespace
   and proname in (
     'create_stock_order', 'pay_stock_order', 'cancel_stock_order',
-    'schedule_order_bsu_pickup', 'schedule_order_pengepul_pickup',
+    'schedule_order_bsu_pickup', 'schedule_order_industri_pickup',
     'update_pickup_status'
   )
 order by proname;
@@ -317,7 +318,8 @@ untuk memastikan:
 14. Non-admin tidak dapat mengubah `waste_types` atau status `organizations`;
     admin dapat memverifikasi/menolak organisasi dan mengelola master sampah.
 15. Nilai enum lama `pembeli`/`pengepul` tidak lagi dipakai baris profil atau
-    organisasi mana pun; registrasi baru selalu menghasilkan `warga`.
+    organisasi mana pun; registrasi baru selalu menghasilkan `warga`. Nama
+    internal lain sudah memakai `industri` (lihat migrasi 17).
 
 ## Catatan
 

@@ -691,9 +691,9 @@ export function DepositDetailPage({ viewer }: { viewer: 'warga' | 'bsu' }) {
           {viewer === 'warga' &&
             deposit.status !== 'dicek_dibayar' &&
             deposit.status !== 'dipublikasikan' &&
-            deposit.status !== 'dibeli_pengepul' &&
+            deposit.status !== 'dibeli_industri' &&
             deposit.status !== 'diambil_bsi' &&
-            deposit.status !== 'diambil_pengepul' && (
+            deposit.status !== 'diambil_industri' && (
               <Card className="p-4 md:p-5">
                 <div className="flex items-start gap-2.5">
                   <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#f2f5f1] text-ink">

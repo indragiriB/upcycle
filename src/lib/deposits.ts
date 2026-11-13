@@ -15,9 +15,9 @@ export const ACTIVE_DEPOSIT_STATUSES: DepositStatus[] = [
 
 export const COMPLETED_DEPOSIT_STATUSES: DepositStatus[] = [
   'dipublikasikan',
-  'dibeli_pengepul',
+  'dibeli_industri',
   'diambil_bsi',
-  'diambil_pengepul',
+  'diambil_industri',
 ];
 
 export const WAITING_DEPOSIT_STATUSES: DepositStatus[] = [
@@ -91,13 +91,13 @@ export interface DepositTimelineStep {
 
 export function depositTimeline(deposit: DepositRecord): DepositTimelineStep[] {
   const purchased =
-    deposit.status === 'dibeli_pengepul' ||
+    deposit.status === 'dibeli_industri' ||
     deposit.status === 'diambil_bsi' ||
-    deposit.status === 'diambil_pengepul';
+    deposit.status === 'diambil_industri';
   const takenByBsi =
     Boolean(deposit.diambil_bsi_at) ||
     deposit.status === 'diambil_bsi' ||
-    deposit.status === 'diambil_pengepul';
+    deposit.status === 'diambil_industri';
 
   return [
     {
@@ -146,7 +146,7 @@ export function depositTimeline(deposit: DepositRecord): DepositTimelineStep[] {
       done: Boolean(deposit.dipublikasikan_at),
     },
     {
-      key: 'dibeli_pengepul',
+      key: 'dibeli_industri',
       title: 'Dibeli industri',
       description: 'Stok setoran dialokasikan ke pesanan industri.',
       at: null,
@@ -160,11 +160,11 @@ export function depositTimeline(deposit: DepositRecord): DepositTimelineStep[] {
       done: takenByBsi,
     },
     {
-      key: 'diambil_pengepul',
+      key: 'diambil_industri',
       title: 'Diambil industri',
       description: 'Industri mengambil stok dari lokasi BSI.',
-      at: deposit.diambil_pengepul_at,
-      done: Boolean(deposit.diambil_pengepul_at),
+      at: deposit.diambil_industri_at,
+      done: Boolean(deposit.diambil_industri_at),
     },
   ];
 }

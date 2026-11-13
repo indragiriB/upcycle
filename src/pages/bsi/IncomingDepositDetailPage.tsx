@@ -168,9 +168,9 @@ function DetailSkeleton() {
 
 function timelineFor(deposit: BsiIncomingDeposit) {
   const purchased =
-    deposit.status === 'dibeli_pengepul' ||
+    deposit.status === 'dibeli_industri' ||
     deposit.status === 'diambil_bsi' ||
-    deposit.status === 'diambil_pengepul';
+    deposit.status === 'diambil_industri';
 
   return [
     {
@@ -205,11 +205,11 @@ function timelineFor(deposit: BsiIncomingDeposit) {
       done: Boolean(deposit.diambil_bsi_at),
     },
     {
-      key: 'diambil_pengepul',
+      key: 'diambil_industri',
       title: 'Diambil industri',
       description: 'Stok sudah diambil industri di lokasi BSI.',
-      at: deposit.diambil_pengepul_at,
-      done: Boolean(deposit.diambil_pengepul_at),
+      at: deposit.diambil_industri_at,
+      done: Boolean(deposit.diambil_industri_at),
     },
   ];
 }

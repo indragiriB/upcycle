@@ -237,10 +237,6 @@ export default function App() {
 
           <Route path="/pembeli/katalog" element={<Navigate to="/marketplace" replace />} />
           <Route path="/pembeli/pesanan" element={<Navigate to="/warga/pesanan" replace />} />
-          <Route path="/pengepul/stok" element={<Navigate to="/industri/stok" replace />} />
-          <Route path="/pengepul/pesanan" element={<Navigate to="/industri/pesanan" replace />} />
-          <Route path="/pengepul/kas" element={<Navigate to="/industri/kas" replace />} />
-          <Route path="/pengepul/produk" element={<Navigate to="/industri/produk" replace />} />
 
           <Route
             path="/admin/jenis-sampah"

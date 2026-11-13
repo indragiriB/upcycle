@@ -7,9 +7,9 @@ export const DEPOSIT_STATUS_LABELS: Record<string, string> = {
   dikonfirmasi: 'Dikonfirmasi',
   dikirim_ke_bsi: 'Dikirim ke BSI',
   dipublikasikan: 'Dipublikasikan',
-  dibeli_pengepul: 'Dibeli industri',
+  dibeli_industri: 'Dibeli industri',
   diambil_bsi: 'Diambil BSI',
-  diambil_pengepul: 'Diambil industri',
+  diambil_industri: 'Diambil industri',
 };
 
 export const DEPOSIT_STATUS_TONES: Record<string, BadgeTone> = {
@@ -19,9 +19,9 @@ export const DEPOSIT_STATUS_TONES: Record<string, BadgeTone> = {
   dikonfirmasi: 'green',
   dikirim_ke_bsi: 'green',
   dipublikasikan: 'green',
-  dibeli_pengepul: 'neutral',
+  dibeli_industri: 'neutral',
   diambil_bsi: 'neutral',
-  diambil_pengepul: 'neutral',
+  diambil_industri: 'neutral',
 };
 
 /**
@@ -57,9 +57,9 @@ export function depositStage(status: string | null | undefined): DepositStage {
   if (
     status === 'dikirim_ke_bsi' ||
     status === 'dipublikasikan' ||
-    status === 'dibeli_pengepul' ||
+    status === 'dibeli_industri' ||
     status === 'diambil_bsi' ||
-    status === 'diambil_pengepul'
+    status === 'diambil_industri'
   ) {
     return 'selesai';
   }
@@ -85,7 +85,7 @@ export const ORDER_STATUS_TONES: Record<string, BadgeTone> = {
 
 export const PICKUP_TYPE_LABELS: Record<string, string> = {
   bsi_ke_bsu: 'BSI mengambil dari BSU',
-  pengepul_ke_bsi: 'Industri mengambil di BSI',
+  industri_ke_bsi: 'Industri mengambil di BSI',
 };
 
 export const PICKUP_STATUS_LABELS: Record<string, string> = {

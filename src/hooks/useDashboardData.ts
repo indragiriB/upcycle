@@ -98,9 +98,9 @@ const RECEIVED_DEPOSIT_STATUSES = [
   'dikonfirmasi',
   'dikirim_ke_bsi',
   'dipublikasikan',
-  'dibeli_pengepul',
+  'dibeli_industri',
   'diambil_bsi',
-  'diambil_pengepul',
+  'diambil_industri',
 ];
 
 const ACTIVE_ORDER_STATUSES = ['menunggu_pembayaran', 'dibayar', 'diproses'];
@@ -421,7 +421,7 @@ async function loadIndustriSnapshot(orgId: string): Promise<DashboardSnapshot> {
     supabase
       .from('orders')
       .select('id, nomor, status, total, created_at')
-      .eq('pengepul_id', orgId)
+      .eq('industri_id', orgId)
       .order('created_at', { ascending: false })
       .limit(500),
     supabase.from('v_bsi_stock_summary').select('berat_tersedia_kg'),

@@ -16,9 +16,9 @@ export type DepositStatus =
   | 'dikonfirmasi'
   | 'dikirim_ke_bsi'
   | 'dipublikasikan'
-  | 'dibeli_pengepul'
+  | 'dibeli_industri'
   | 'diambil_bsi'
-  | 'diambil_pengepul';
+  | 'diambil_industri';
 export type PriceKind = 'beli' | 'jual';
 export type LedgerDirection = 'masuk' | 'keluar';
 export type StockStatus = 'tersedia' | 'habis';
@@ -28,7 +28,7 @@ export type OrderStatus =
   | 'diproses'
   | 'selesai'
   | 'dibatalkan';
-export type PickupType = 'bsi_ke_bsu' | 'pengepul_ke_bsi';
+export type PickupType = 'bsi_ke_bsu' | 'industri_ke_bsi';
 export type PickupStatus =
   | 'dijadwalkan'
   | 'dalam_perjalanan'
@@ -184,7 +184,7 @@ export interface DepositRecord {
   dikirim_ke_bsi_at: string | null;
   dipublikasikan_at: string | null;
   diambil_bsi_at: string | null;
-  diambil_pengepul_at: string | null;
+  diambil_industri_at: string | null;
   profiles?: { nama: string } | null;
   deposit_items?: DepositItem[];
 }
@@ -237,7 +237,7 @@ export interface BsiIncomingDeposit {
   dikirim_ke_bsi_at: string | null;
   dipublikasikan_at: string | null;
   diambil_bsi_at: string | null;
-  diambil_pengepul_at: string | null;
+  diambil_industri_at: string | null;
   berat_final_kg: number;
 }
 
@@ -314,7 +314,7 @@ export interface PickupRecord {
   tipe: PickupType;
   bsi_id: string;
   bsu_id: string | null;
-  pengepul_id: string | null;
+  industri_id: string | null;
   jadwal: string;
   status: PickupStatus;
   catatan: string | null;
@@ -324,7 +324,7 @@ export interface PickupRecord {
   updated_at: string;
   bsu?: PickupParty | null;
   bsi?: PickupParty | null;
-  pengepul?: PickupParty | null;
+  industri?: PickupParty | null;
   order?: { nomor: string; total: number } | null;
 }
 
@@ -332,7 +332,7 @@ export interface StockOrder {
   id: string;
   nomor: string;
   bsi_id: string;
-  pengepul_id: string;
+  industri_id: string;
   dibuat_oleh: string;
   status: OrderStatus;
   subtotal: number;
@@ -344,7 +344,7 @@ export interface StockOrder {
   created_at: string;
   updated_at: string;
   bsi?: OrganizationBrief | null;
-  pengepul?: OrganizationBrief | null;
+  industri?: OrganizationBrief | null;
   order_items?: OrderItemRecord[];
   pickups?: PickupRecord[];
 }

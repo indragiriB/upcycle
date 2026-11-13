@@ -25,7 +25,7 @@ export function PickupList({
   const canViewerComplete = (pickup: PickupRecord) => {
     if (viewer === 'bsi') return true;
     if (viewer === 'bsu') return pickup.tipe === 'bsi_ke_bsu';
-    return pickup.tipe === 'pengepul_ke_bsi';
+    return pickup.tipe === 'industri_ke_bsi';
   };
   if (pickups.length === 0) {
     return (

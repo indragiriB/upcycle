@@ -14,20 +14,20 @@ import type {
 export const ORDERS_KEY = 'orders';
 
 const ORDER_SELECT = `
-  id, nomor, bsi_id, pengepul_id, dibuat_oleh, status, subtotal, total,
+  id, nomor, bsi_id, industri_id, dibuat_oleh, status, subtotal, total,
   metode_bayar, catatan, dibayar_at, selesai_at, created_at, updated_at,
   bsi:organizations!orders_bsi_id_fkey(nama, alamat, kota, telepon, lat, lng),
-  pengepul:organizations!orders_pengepul_id_fkey(nama, alamat, kota, telepon, lat, lng),
+  industri:organizations!orders_industri_id_fkey(nama, alamat, kota, telepon, lat, lng),
   order_items(
     id, order_id, waste_type_id, berat_kg, harga_per_kg, subtotal, created_at,
     waste_types(nama, kode, kategori, ikon, warna, satuan)
   ),
   pickups(
-    id, order_id, tipe, bsi_id, bsu_id, pengepul_id, jadwal, status, catatan,
+    id, order_id, tipe, bsi_id, bsu_id, industri_id, jadwal, status, catatan,
     dibuat_oleh, selesai_at, created_at, updated_at,
     bsu:organizations!pickups_bsu_id_fkey(nama, alamat, kota, telepon, lat, lng),
     bsi:organizations!pickups_bsi_id_fkey(nama, alamat, kota, telepon, lat, lng),
-    pengepul:organizations!pickups_pengepul_id_fkey(nama, alamat, kota, telepon, lat, lng)
+    industri:organizations!pickups_industri_id_fkey(nama, alamat, kota, telepon, lat, lng)
   )
 `;
 
@@ -69,7 +69,7 @@ function normalizeOrder(order: StockOrder): StockOrder {
 }
 
 const BSU_STOCK_PICKUP_SELECT = `
-  id, order_id, tipe, bsi_id, bsu_id, pengepul_id, jadwal, status, catatan,
+  id, order_id, tipe, bsi_id, bsu_id, industri_id, jadwal, status, catatan,
   dibuat_oleh, selesai_at, created_at, updated_at,
   bsi:organizations!pickups_bsi_id_fkey(nama),
   order:orders!pickups_order_id_fkey(nomor, total)
@@ -113,7 +113,7 @@ export function useStockOrders(
       const { data, error } = await supabase
         .from('orders')
         .select(ORDER_SELECT)
-        .eq(side === 'bsi' ? 'bsi_id' : 'pengepul_id', orgId)
+        .eq(side === 'bsi' ? 'bsi_id' : 'industri_id', orgId)
         .order('created_at', { ascending: false })
         .limit(250);
 
@@ -215,7 +215,7 @@ export function useScheduleOrderPickup(side: 'bsi' | 'industri') {
       const { error } = await supabase.rpc(
         side === 'bsi'
           ? 'schedule_order_bsu_pickup'
-          : 'schedule_order_pengepul_pickup',
+          : 'schedule_order_industri_pickup',
         {
           p_order_id: input.orderId,
           p_jadwal: input.jadwal,

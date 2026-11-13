@@ -14,7 +14,7 @@ const INCOMING_SELECT = `
   id, warga_id, warga_nama, bsu_id, bsu_nama, bsi_id, metode, metode_bayar,
   estimasi_jenis, estimasi_berat_kg, status, total, potongan, alasan_potongan,
   jadwal, created_at, updated_at, dicek_at, dibayar_at, dikonfirmasi_at,
-  dikirim_ke_bsi_at, dipublikasikan_at, diambil_bsi_at, diambil_pengepul_at
+  dikirim_ke_bsi_at, dipublikasikan_at, diambil_bsi_at, diambil_industri_at
 `;
 
 const INCOMING_ITEM_SELECT = `

@@ -357,8 +357,8 @@ Semua rute selain halaman publik dilindungi. Marketplace dapat dibuka semua
 peran yang login, sedangkan pengelolaan produk, pesanan warga, master jenis
 sampah, verifikasi organisasi, dan pengelolaan pengguna dibatasi sesuai peran
 masing-masing (`ROUTE_ROLES` di `src/config/navigation.ts`). Rute lama
-`/pengepul/*` dialihkan ke `/industri/*`, `/pembeli/katalog` ke `/marketplace`,
-dan `/pembeli/pesanan` ke `/warga/pesanan`.
+`/pembeli/katalog` dialihkan ke `/marketplace`, dan `/pembeli/pesanan` ke
+`/warga/pesanan`.
 
 ## Struktur singkat
 
