@@ -55,6 +55,7 @@ import { Button, buttonStyles } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { DepositStatusBadge } from '@/components/deposits/DepositStatusBadge';
+import { DepositStageProgress } from '@/components/deposits/DepositStageProgress';
 import { DepositItemsTable } from '@/components/deposits/DepositItemsTable';
 import { SchedulePickupDialog } from '@/components/deposits/SchedulePickupDialog';
 import { WeighingDialog } from '@/components/deposits/WeighingDialog';
@@ -415,13 +416,20 @@ export function DepositDetailPage({ viewer }: { viewer: 'warga' | 'bsu' }) {
         backLabel={backLabel}
         actions={
           <>
-            <DepositStatusBadge status={deposit.status} />
+            <DepositStatusBadge
+              status={deposit.status}
+              simplified={viewer === 'warga'}
+            />
             <Badge tone="neutral" className="px-2.5 py-1">
               {deposit.metode === 'jemput' ? 'Dijemput BSU' : 'Antar sendiri'}
             </Badge>
           </>
         }
       />
+
+      {viewer === 'warga' && (
+        <DepositStageProgress status={deposit.status} />
+      )}
 
       {createdNotice && (
         <div className="flex items-start justify-between gap-3 rounded-2xl border border-brand-100 bg-brand-50 px-4 py-3 text-[11px] leading-5 text-brand-900">
@@ -488,7 +496,10 @@ export function DepositDetailPage({ viewer }: { viewer: 'warga' | 'bsu' }) {
                       {formatDateTime(deposit.created_at)}
                     </p>
                   </div>
-                  <DepositStatusBadge status={deposit.status} />
+                  <DepositStatusBadge
+                    status={deposit.status}
+                    simplified={viewer === 'warga'}
+                  />
                 </div>
 
                 <div className="mt-5 grid grid-cols-2 gap-2.5 sm:grid-cols-4">

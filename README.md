@@ -50,8 +50,11 @@ sampah & verifikasi organisasi)**.
     serta foto sampah (privat, maksimal 5 MB).
   - Estimasi pembayaran dari harga aktif BSU dan validasi format nomor WA.
   - Halaman harga BSU untuk membandingkan penawaran antar-BSU per jenis sampah.
-  - Riwayat setoran dengan filter status, pencarian, ringkasan berat/pendapatan,
+  - Riwayat setoran dengan filter tahap, pencarian, ringkasan berat/pendapatan,
     dan halaman detail.
+  - Warga melihat status ringkas tiga tahap: **Diajukan → Ditimbang → Selesai**.
+    Status internal 9 tahap tetap dipakai pada timeline detail, antrean BSU/BSI,
+    dan data database.
   - Konfirmasi hasil timbang langsung dari halaman detail setelah BSU mencatat
     berat final dan pembayaran.
 - **BSU**

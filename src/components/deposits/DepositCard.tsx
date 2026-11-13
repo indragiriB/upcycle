@@ -24,12 +24,14 @@ export function DepositCard({
   href,
   contextLabel,
   showWarga = false,
+  simplifiedStatus = false,
   actions,
 }: {
   deposit: DepositRecord;
   href: string;
   contextLabel?: string | null;
   showWarga?: boolean;
+  simplifiedStatus?: boolean;
   actions?: ReactNode;
 }) {
   const MethodIcon = deposit.metode === 'jemput' ? Truck : Store;
@@ -80,6 +82,7 @@ export function DepositCard({
             </span>
             <DepositStatusBadge
               status={deposit.status}
+              simplified={simplifiedStatus}
               className="shrink-0 px-2 py-0.5 text-[9px]"
             />
           </span>

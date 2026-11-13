@@ -24,6 +24,49 @@ export const DEPOSIT_STATUS_TONES: Record<string, BadgeTone> = {
   diambil_pengepul: 'neutral',
 };
 
+/**
+ * Warga cukup melihat tiga tahap besar. Status internal (9 tahap) tetap
+ * dipakai pada timeline, aksi BSU/BSI, dan data mentah di database.
+ */
+export type DepositStage = 'diajukan' | 'ditimbang' | 'selesai';
+
+export const DEPOSIT_STAGE_LABELS: Record<DepositStage, string> = {
+  diajukan: 'Diajukan',
+  ditimbang: 'Ditimbang',
+  selesai: 'Selesai',
+};
+
+export const DEPOSIT_STAGE_TONES: Record<DepositStage, BadgeTone> = {
+  diajukan: 'amber',
+  ditimbang: 'green',
+  selesai: 'neutral',
+};
+
+export const DEPOSIT_STAGE_HINTS: Record<DepositStage, string> = {
+  diajukan: 'Setoranmu menunggu dijadwalkan atau ditimbang oleh BSU.',
+  ditimbang:
+    'BSU sudah mencatat hasil timbang dan pembayaran. Periksa rincian di bawah.',
+  selesai:
+    'Setoranmu sudah selesai diproses. Terima kasih sudah memilah sampah!',
+};
+
+export function depositStage(status: string | null | undefined): DepositStage {
+  if (status === 'dicek_dibayar' || status === 'dikonfirmasi') {
+    return 'ditimbang';
+  }
+  if (
+    status === 'dikirim_ke_bsi' ||
+    status === 'dipublikasikan' ||
+    status === 'dibeli_pengepul' ||
+    status === 'diambil_bsi' ||
+    status === 'diambil_pengepul'
+  ) {
+    return 'selesai';
+  }
+  return 'diajukan';
+}
+
+
 export const ORDER_STATUS_LABELS: Record<string, string> = {
   menunggu_pembayaran: 'Menunggu pembayaran',
   dibayar: 'Dibayar',

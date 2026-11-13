@@ -2,12 +2,15 @@ import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { monthStartIso, formatWeight } from '@/lib/utils';
 import {
+  DEPOSIT_STAGE_LABELS,
+  DEPOSIT_STAGE_TONES,
   DEPOSIT_STATUS_LABELS,
   DEPOSIT_STATUS_TONES,
   ORDER_STATUS_LABELS,
   ORDER_STATUS_TONES,
   VERIFICATION_LABELS,
   VERIFICATION_TONES,
+  depositStage,
   statusLabel,
   statusTone,
 } from '@/lib/status';
@@ -87,6 +90,7 @@ const ACTIVE_DEPOSIT_STATUSES = [
   'diajukan',
   'dijadwalkan',
   'dicek_dibayar',
+  'dikonfirmasi',
 ];
 
 const RECEIVED_DEPOSIT_STATUSES = [
@@ -129,18 +133,26 @@ function depositChartRows(rows: DepositRow[]) {
 function depositRecent(
   rows: DepositRow[],
   hrefPrefix: string,
+  simplified = false,
 ): DashboardRecentItem[] {
-  return rows.slice(0, 4).map((row) => ({
-    id: row.id,
-    title: `Setoran ${row.estimasi_jenis ?? 'sampah'}`,
-    description: `${formatWeight(depositWeight(row))} · ${
-      row.metode === 'jemput' ? 'Dijemput BSU' : 'Diantar ke BSU'
-    }`,
-    date: row.created_at,
-    status: statusLabel(row.status, DEPOSIT_STATUS_LABELS),
-    tone: statusTone(row.status, DEPOSIT_STATUS_TONES),
-    href: `${hrefPrefix}/${row.id}`,
-  }));
+  return rows.slice(0, 4).map((row) => {
+    const stage = depositStage(row.status);
+    return {
+      id: row.id,
+      title: `Setoran ${row.estimasi_jenis ?? 'sampah'}`,
+      description: `${formatWeight(depositWeight(row))} · ${
+        row.metode === 'jemput' ? 'Dijemput BSU' : 'Diantar ke BSU'
+      }`,
+      date: row.created_at,
+      status: simplified
+        ? DEPOSIT_STAGE_LABELS[stage]
+        : statusLabel(row.status, DEPOSIT_STATUS_LABELS),
+      tone: simplified
+        ? DEPOSIT_STAGE_TONES[stage]
+        : statusTone(row.status, DEPOSIT_STATUS_TONES),
+      href: `${hrefPrefix}/${row.id}`,
+    };
+  });
 }
 
 function ledgerTotal(rows: LedgerRow[], arah: 'masuk' | 'keluar') {
@@ -205,7 +217,7 @@ async function loadWargaSnapshot(userId: string): Promise<DashboardSnapshot> {
         label: 'Setoran aktif',
         value: activeResult.count ?? 0,
         format: 'number',
-        hint: 'Menunggu jadwal & timbangan',
+        hint: 'Belum selesai diproses',
       },
       {
         key: 'total',
@@ -221,7 +233,7 @@ async function loadWargaSnapshot(userId: string): Promise<DashboardSnapshot> {
       format: 'weight',
       rows: depositChartRows(rows),
     },
-    recent: depositRecent(rows, '/warga/setoran'),
+    recent: depositRecent(rows, '/warga/setoran', true),
   };
 }
 

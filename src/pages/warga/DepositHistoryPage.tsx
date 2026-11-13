@@ -12,10 +12,9 @@ import { usePageTitle } from '@/hooks/usePageTitle';
 import { useWargaDeposits } from '@/hooks/useDeposits';
 import { useVerifiedBsuOrganizations } from '@/hooks/useOrganizations';
 import {
-  ACTIVE_DEPOSIT_STATUSES,
-  COMPLETED_DEPOSIT_STATUSES,
   depositWeight,
 } from '@/lib/deposits';
+import { DEPOSIT_STAGE_LABELS, depositStage } from '@/lib/status';
 import {
   formatCurrency,
   formatWeight,
@@ -32,26 +31,17 @@ import { DepositCard } from '@/components/deposits/DepositCard';
 import { SetorTabs } from '@/components/deposits/SetorTabs';
 import type { DashboardStat, DepositStatus } from '@/types/database';
 
-type HistoryFilter = 'semua' | 'aktif' | 'selesai';
-type DepositFilter = HistoryFilter | 'menunggu';
+type DepositFilter = 'semua' | 'diajukan' | 'ditimbang' | 'selesai';
 
 const FILTERS: Array<{ key: DepositFilter; label: string }> = [
   { key: 'semua', label: 'Semua' },
-  { key: 'menunggu', label: 'Menunggu BSU' },
-  { key: 'aktif', label: 'Dalam proses' },
-  { key: 'selesai', label: 'Selesai' },
+  { key: 'diajukan', label: DEPOSIT_STAGE_LABELS.diajukan },
+  { key: 'ditimbang', label: DEPOSIT_STAGE_LABELS.ditimbang },
+  { key: 'selesai', label: DEPOSIT_STAGE_LABELS.selesai },
 ];
 
 function matchesFilter(status: DepositStatus, filter: DepositFilter) {
-  if (filter === 'semua') return true;
-  if (filter === 'menunggu') return status === 'diajukan';
-  if (filter === 'aktif') {
-    return (
-      ACTIVE_DEPOSIT_STATUSES.includes(status) &&
-      status !== 'diajukan'
-    );
-  }
-  return COMPLETED_DEPOSIT_STATUSES.includes(status);
+  return filter === 'semua' || depositStage(status) === filter;
 }
 
 export function DepositHistoryPage() {
@@ -76,7 +66,8 @@ export function DepositHistoryPage() {
       if (!matchesFilter(row.status, filter)) return false;
       if (!keyword) return true;
       const bsuName = bsuById.get(row.bsu_id)?.nama ?? '';
-      return `${row.estimasi_jenis} ${bsuName} ${row.status} ${row.id}`
+      const stageLabel = DEPOSIT_STAGE_LABELS[depositStage(row.status)];
+      return `${row.estimasi_jenis} ${bsuName} ${row.status} ${stageLabel} ${row.id}`
         .toLowerCase()
         .includes(keyword);
     });
@@ -90,8 +81,8 @@ export function DepositHistoryPage() {
     (total, row) => total + depositWeight(row),
     0,
   );
-  const activeCount = rows.filter((row) =>
-    ACTIVE_DEPOSIT_STATUSES.includes(row.status),
+  const activeCount = rows.filter(
+    (row) => depositStage(row.status) !== 'selesai',
   ).length;
 
   const stats: DashboardStat[] = [
@@ -118,10 +109,10 @@ export function DepositHistoryPage() {
     },
     {
       key: 'aktif',
-      label: 'Setoran aktif',
+      label: 'Belum selesai',
       value: activeCount,
       format: 'number',
-      hint: 'Masih diproses',
+      hint: 'Tahap diajukan/ditimbang',
       badge: activeCount > 0 ? 'Berjalan' : undefined,
     },
   ];
@@ -261,6 +252,7 @@ export function DepositHistoryPage() {
                     deposit={deposit}
                     href={`/warga/setoran/${deposit.id}`}
                     contextLabel={bsu?.nama ?? null}
+                    simplifiedStatus
                   />
                 );
               })}
