@@ -34,6 +34,7 @@ import { ProductManagementPage } from '@/pages/products/ProductManagementPage';
 import { WargaOrdersPage } from '@/pages/products/WargaOrdersPage';
 import { WasteTypesPage } from '@/pages/admin/WasteTypesPage';
 import { OrganizationVerificationPage } from '@/pages/admin/OrganizationVerificationPage';
+import { UsersPage } from '@/pages/admin/UsersPage';
 
 export default function App() {
   if (!isSupabaseConfigured) {
@@ -254,6 +255,14 @@ export default function App() {
             element={
               <RoleGate path="/admin/organisasi">
                 <OrganizationVerificationPage />
+              </RoleGate>
+            }
+          />
+          <Route
+            path="/admin/pengguna"
+            element={
+              <RoleGate path="/admin/pengguna">
+                <UsersPage />
               </RoleGate>
             }
           />

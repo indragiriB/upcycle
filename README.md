@@ -153,8 +153,18 @@ sampah & verifikasi organisasi)**.
   - Verifikasi, tolak, atau cabut verifikasi. Verifikasi mencatat `verified_at`
     dan `verified_by`; organisasi terverifikasi dapat dipakai pada alur
     setoran, stok, dan marketplace.
+  - **Ubah data** organisasi untuk memperbaiki nama, nomor WhatsApp, email,
+    alamat, kota/provinsi, serta koordinat lintang/bujur. Berguna untuk
+    merapikan data demo atau kontak yang salah.
   - Aksi memakai policy RLS admin yang sudah ada, tanpa service-role key di
     frontend.
+- **Admin — kelola pengguna** (`/admin/pengguna`)
+  - Daftar akun yang sudah mendaftar dengan pencarian dan filter peran.
+  - Naikkan peran akun menjadi `bsu`, `bsi`, `industri`, atau `admin`, lalu
+    hubungkan ke organisasi yang sesuai (BSU/BSI/industri).
+  - Peran `warga` dan `admin` otomatis dilepas dari organisasi usaha.
+  - Akun admin sendiri tidak dapat diubah dari halaman ini agar akses admin
+    tidak hilang. Perubahan langsung berlaku setelah pengguna memuat ulang.
 
 ## Menjalankan proyek
 
@@ -334,18 +344,18 @@ kredensial seed; bila password akun diubah di Supabase, isinya tidak akan cocok.
 
 | Peran | Menu utama |
 | --- | --- |
-| warga | Dashboard, Setor sampah, Harga BSU, Riwayat, Produk saya, Marketplace (Pesanan saya dibuka lewat Marketplace) |
+| warga | Beranda, Setor (berisi tab Setor baru, Riwayat, Harga BSU), Market (berisi tab Jelajahi, Produk saya, Pesanan), Akun |
 | bsu | Dashboard, Antrean setoran, Jemput, Harga, Buku kas |
 | bsi | Dashboard, Data masuk, Stok, Pesanan, Buku kas |
-| industri | Dashboard, Stok BSI, Pesanan, Produk, Buku kas |
-| admin | Dashboard, Jenis sampah, Verifikasi |
+| industri | Dashboard, Stok BSI, Pesanan, Produk, Marketplace, Buku kas |
+| admin | Dashboard, Jenis sampah, Verifikasi, Pengguna |
 
-Semua rute selain halaman publik dilindungi. Rute tahap 1–6 sudah aktif:
-marketplace dapat dibuka semua peran yang login, sedangkan pengelolaan produk,
-pesanan warga, master jenis sampah, dan verifikasi organisasi dibatasi sesuai
-peran masing-masing. Rute lama `/pengepul/*` dialihkan ke `/industri/*`,
-`/pembeli/katalog` ke `/marketplace`, dan `/pembeli/pesanan` ke
-`/warga/pesanan`.
+Semua rute selain halaman publik dilindungi. Marketplace dapat dibuka semua
+peran yang login, sedangkan pengelolaan produk, pesanan warga, master jenis
+sampah, verifikasi organisasi, dan pengelolaan pengguna dibatasi sesuai peran
+masing-masing (`ROUTE_ROLES` di `src/config/navigation.ts`). Rute lama
+`/pengepul/*` dialihkan ke `/industri/*`, `/pembeli/katalog` ke `/marketplace`,
+dan `/pembeli/pesanan` ke `/warga/pesanan`.
 
 ## Struktur singkat
 
@@ -353,7 +363,8 @@ peran masing-masing. Rute lama `/pengepul/*` dialihkan ke `/industri/*`,
 src/
   auth/            provider sesi + profil
   components/
-    admin/         dialog jenis sampah & keputusan verifikasi organisasi
+    admin/         dialog jenis sampah, verifikasi organisasi, ubah data
+                   organisasi, dan atur peran pengguna
     cash/          dialog biaya operasional & koreksi kas
     dashboard/     peta, grafik, statistik, aktivitas, mitra
     deposits/      kartu setoran, dialog jadwal/timbang, rincian item
@@ -375,7 +386,7 @@ src/
     bsi/           data masuk, detail & publikasi, stok + harga jual, pesanan
     industri/      katalog stok, pesanan
     products/      katalog marketplace, pesanan warga, kelola produk penjual
-    admin/         master jenis sampah, verifikasi organisasi
+    admin/         master jenis sampah, verifikasi organisasi, kelola pengguna
     deposits/      halaman detail setoran bersama warga/BSU
     ...            dashboard, profil, setup, 404
   routes/          guard sesi, guard peran, redirect root
@@ -523,12 +534,19 @@ supabase/
 3. Nonaktifkan jenis tersebut → jenis hilang dari pilihan baru, tetapi data
    transaksi lama tetap aman. Aktifkan kembali.
 4. Buka **Verifikasi**. Coba pencarian dan filter status/tipe.
-5. Pilih salah satu organisasi terverifikasi → **Cabut verifikasi**, lalu
+5. Klik **Ubah data** pada satu organisasi, ganti nomor WhatsApp/koordinat, lalu
+   simpan. Pastikan kartu organisasi, tautan WhatsApp, dan titik peta memakai
+   data baru.
+6. Pilih salah satu organisasi terverifikasi → **Cabut verifikasi**, lalu
    verifikasi kembali. Pastikan badge status dan tanggal verifikasi berubah.
-6. Organisasi yang berstatus ditolak harus gagal dipakai pada alur transaksi
+7. Organisasi yang berstatus ditolak harus gagal dipakai pada alur transaksi
    baru sampai diverifikasi kembali.
-7. Buka `/admin/organisasi` sebagai warga atau industri → harus dialihkan ke
-   dashboard.
+8. Buka **Pengguna**. Cari akun `warga2@upcycle.id`, ubah perannya menjadi
+   **Petugas BSU** dan hubungkan ke **BSU Melati**. Login ulang sebagai akun itu
+   → menu BSU harus muncul. Kembalikan perannya ke **Warga** setelah uji.
+9. Pastikan akun sendiri tidak bisa diubah perannya dari halaman **Pengguna**.
+10. Buka `/admin/organisasi` atau `/admin/pengguna` sebagai warga atau industri →
+    harus dialihkan ke dashboard.
 8. Jalankan `npm run typecheck` dan `npm run build` → keduanya harus lulus.
 
 ## Status tahap

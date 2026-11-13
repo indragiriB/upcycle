@@ -72,6 +72,13 @@ export interface ProfileWithOrganization extends Profile {
   organizations: OrganizationSummary | null;
 }
 
+export interface AdminProfileRecord extends Profile {
+  organizations: Pick<
+    OrganizationSummary,
+    'id' | 'nama' | 'tipe' | 'status'
+  > | null;
+}
+
 export interface AppNotification {
   id: string;
   user_id: string;

@@ -2,12 +2,20 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { WASTE_TYPES_KEY } from '@/hooks/usePrices';
 import type {
+  AdminProfileRecord,
+  AppRole,
   OrganizationAdminRecord,
   VerificationStatus,
   WasteType,
 } from '@/types/database';
 
 export const ADMIN_ORGANIZATIONS_KEY = 'admin-organizations';
+export const ADMIN_PROFILES_KEY = 'admin-profiles';
+
+const ADMIN_PROFILE_SELECT = `
+  id, nama, role, org_id, avatar_url, created_at,
+  organizations:org_id (id, nama, tipe, status)
+`;
 
 const ADMIN_ORGANIZATION_SELECT = `
   id, tipe, nama, slug, alamat, kota, provinsi, telepon, email, lat, lng,
@@ -151,6 +159,56 @@ export function useAdminOrganizations() {
   });
 }
 
+export interface OrganizationDetailsInput {
+  id: string;
+  nama: string;
+  telepon: string;
+  email: string;
+  alamat: string;
+  kota: string;
+  provinsi: string;
+  lat: number | null;
+  lng: number | null;
+}
+
+export function useUpdateOrganizationDetails() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: OrganizationDetailsInput) => {
+      const { data, error } = await supabase
+        .from('organizations')
+        .update({
+          nama: input.nama.trim(),
+          telepon: input.telepon.trim() || null,
+          email: input.email.trim() || null,
+          alamat: input.alamat.trim() || null,
+          kota: input.kota.trim() || null,
+          provinsi: input.provinsi.trim() || null,
+          lat: input.lat,
+          lng: input.lng,
+        })
+        .eq('id', input.id)
+        .select(ADMIN_ORGANIZATION_SELECT)
+        .single();
+
+      if (error) {
+        if (error.code === '23505' || error.message.includes('duplicate key')) {
+          throw new Error('Nama organisasi sudah digunakan.');
+        }
+        throw new Error(error.message || 'Data organisasi gagal disimpan.');
+      }
+
+      return data as OrganizationAdminRecord;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [ADMIN_ORGANIZATIONS_KEY] });
+      void queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+  });
+}
+
 export function useUpdateOrganizationStatus(adminId: string | null) {
   const queryClient = useQueryClient();
 
@@ -185,6 +243,71 @@ export function useUpdateOrganizationStatus(adminId: string | null) {
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: [ADMIN_ORGANIZATIONS_KEY] });
       void queryClient.invalidateQueries({ queryKey: ['organizations'] });
+      void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
+    },
+  });
+}
+
+export interface UserAccessInput {
+  id: string;
+  role: AppRole;
+  orgId: string | null;
+}
+
+function userAccessError(error: { message: string } | null) {
+  const message = error?.message ?? '';
+
+  if (message.includes('wajib terhubung ke organisasi')) {
+    return new Error('Peran ini wajib terhubung ke organisasi.');
+  }
+  if (message.includes('tidak cocok dengan tipe organisasi')) {
+    return new Error('Tipe organisasi tidak cocok dengan peran yang dipilih.');
+  }
+  if (message.includes('tidak boleh terhubung ke organisasi')) {
+    return new Error('Peran warga dan admin tidak boleh terhubung ke organisasi usaha.');
+  }
+
+  return new Error(message || 'Peran pengguna gagal diperbarui.');
+}
+
+export function useAdminProfiles() {
+  return useQuery({
+    queryKey: [ADMIN_PROFILES_KEY],
+    staleTime: 20_000,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select(ADMIN_PROFILE_SELECT)
+        .order('created_at', { ascending: false })
+        .limit(500);
+
+      if (error) {
+        throw new Error(error.message || 'Daftar pengguna gagal dimuat.');
+      }
+
+      return (data ?? []) as unknown as AdminProfileRecord[];
+    },
+  });
+}
+
+export function useUpdateUserAccess() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: UserAccessInput) => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .update({ role: input.role, org_id: input.orgId })
+        .eq('id', input.id)
+        .select(ADMIN_PROFILE_SELECT)
+        .single();
+
+      if (error) throw userAccessError(error);
+
+      return data as unknown as AdminProfileRecord;
+    },
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: [ADMIN_PROFILES_KEY] });
       void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
     },
   });

@@ -8,6 +8,7 @@ import {
   ExternalLink,
   Mail,
   MapPin,
+  Pencil,
   Phone,
   RefreshCw,
   Search,
@@ -45,6 +46,7 @@ import {
   OrganizationDecisionDialog,
   type OrganizationDecision,
 } from '@/components/admin/OrganizationDecisionDialog';
+import { OrganizationDetailsDialog } from '@/components/admin/OrganizationDetailsDialog';
 import type {
   DashboardStat,
   OrganizationAdminRecord,
@@ -78,6 +80,7 @@ export function OrganizationVerificationPage() {
     organization: OrganizationAdminRecord;
     action: OrganizationDecision;
   } | null>(null);
+  const [editing, setEditing] = useState<OrganizationAdminRecord | null>(null);
 
   usePageTitle('Verifikasi organisasi');
 
@@ -345,6 +348,14 @@ export function OrganizationVerificationPage() {
                         </div>
 
                         <div className="flex flex-wrap gap-2">
+                          <Button
+                            size="sm"
+                            variant="secondary"
+                            onClick={() => setEditing(org)}
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                            Ubah data
+                          </Button>
                           {org.status !== 'verified' && (
                             <Button
                               size="sm"
@@ -484,6 +495,18 @@ export function OrganizationVerificationPage() {
               action === 'verify'
                 ? `${organization.nama} berhasil diverifikasi.`
                 : `${organization.nama} ditolak. Verifikasi sebelumnya, bila ada, telah dicabut.`,
+          });
+        }}
+      />
+
+      <OrganizationDetailsDialog
+        open={Boolean(editing)}
+        onClose={() => setEditing(null)}
+        organization={editing}
+        onSuccess={(organization) => {
+          setNotice({
+            tone: 'success',
+            text: `Data ${organization.nama} berhasil diperbarui.`,
           });
         }}
       />

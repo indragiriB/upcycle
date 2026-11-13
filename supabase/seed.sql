@@ -117,6 +117,8 @@ where u.email in (
 
 -- ----------------------------------------------------------------------------
 -- Organisasi (semua sudah terverifikasi agar bisa langsung diuji)
+-- Nomor telepon sengaja palsu (0812-0000-xxxx) agar tidak menunjuk ke
+-- WhatsApp orang sungguhan.
 -- ----------------------------------------------------------------------------
 insert into public.organizations (
   id, tipe, nama, slug, alamat, kota, provinsi, telepon, email,
@@ -126,28 +128,28 @@ values
   (
     '20000000-0000-4000-8000-000000000001', 'bsu', 'BSU Melati',
     'bsu-melati', 'Jl. Melati Raya No. 12, Kel. Cipete Utara', 'Jakarta Selatan',
-    'DKI Jakarta', '081234567801', 'bsu1@upcycle.id',
+    'DKI Jakarta', '081200000001', 'bsu1@upcycle.id',
     -6.244100, 106.800200, 'verified', now(),
     '10000000-0000-4000-8000-000000000001'
   ),
   (
     '20000000-0000-4000-8000-000000000002', 'bsu', 'BSU Kenanga',
     'bsu-kenanga', 'Jl. Kenanga No. 8, Kel. Pondok Labu', 'Jakarta Selatan',
-    'DKI Jakarta', '081234567802', 'bsu2@upcycle.id',
+    'DKI Jakarta', '081200000002', 'bsu2@upcycle.id',
     -6.258300, 106.794800, 'verified', now(),
     '10000000-0000-4000-8000-000000000001'
   ),
   (
     '20000000-0000-4000-8000-000000000003', 'bsi', 'BSI Nusantara Hijau',
     'bsi-nusantara-hijau', 'Jl. Lingkar Selatan No. 45', 'Jakarta Selatan',
-    'DKI Jakarta', '081234567803', 'bsi@upcycle.id',
+    'DKI Jakarta', '081200000003', 'bsi@upcycle.id',
     -6.233500, 106.807500, 'verified', now(),
     '10000000-0000-4000-8000-000000000001'
   ),
   (
     '20000000-0000-4000-8000-000000000004', 'industri', 'CV Jaya Daur Ulang',
     'cv-jaya-daur-ulang', 'Jl. Industri Raya No. 27', 'Jakarta Timur',
-    'DKI Jakarta', '081234567804', 'industri@upcycle.id',
+    'DKI Jakarta', '081200000004', 'industri@upcycle.id',
     -6.224600, 106.841200, 'verified', now(),
     '10000000-0000-4000-8000-000000000001'
   );
