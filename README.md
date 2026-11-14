@@ -558,7 +558,7 @@ supabase/
 9. Pastikan akun sendiri tidak bisa diubah perannya dari halaman **Pengguna**.
 10. Buka `/admin/organisasi` atau `/admin/pengguna` sebagai warga atau industri →
     harus dialihkan ke dashboard.
-8. Jalankan `npm run typecheck` dan `npm run build` → keduanya harus lulus.
+11. Jalankan `npm run typecheck` dan `npm run build` → keduanya harus lulus.
 
 ## Pembaruan produksi: PWA, offline, WhatsApp, dan monitoring
 
