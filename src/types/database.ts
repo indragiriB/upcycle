@@ -185,6 +185,11 @@ export interface DepositRecord {
   dipublikasikan_at: string | null;
   diambil_bsi_at: string | null;
   diambil_industri_at: string | null;
+  bukti_bayar_url: string | null;
+  bukti_bayar_at: string | null;
+  pembayaran_diterima_at: string | null;
+  pembayaran_ditolak_at: string | null;
+  alasan_bayar_ditolak: string | null;
   profiles?: { nama: string } | null;
   deposit_items?: DepositItem[];
 }

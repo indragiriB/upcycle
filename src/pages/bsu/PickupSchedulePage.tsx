@@ -113,7 +113,10 @@ export function PickupSchedulePage() {
   const stockPickupsQuery = useBsuStockPickups(profile?.org_id ?? null);
   const pickupMutation = useUpdatePickupStatus();
   const rows = useMemo(
-    () => (depositsQuery.data ?? []).filter((row) => row.metode === 'jemput'),
+    () =>
+      (depositsQuery.data?.pages.flat() ?? []).filter(
+        (row) => row.metode === 'jemput',
+      ),
     [depositsQuery.data],
   );
   const stockPickups = useMemo(() => {
@@ -520,6 +523,20 @@ export function PickupSchedulePage() {
                   </div>
                 );
               })}
+            </div>
+          )}
+
+          {depositsQuery.hasNextPage && (
+            <div className="mt-3 flex justify-center">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void depositsQuery.fetchNextPage()}
+                loading={depositsQuery.isFetchingNextPage}
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Muat lebih banyak
+              </Button>
             </div>
           )}
         </div>

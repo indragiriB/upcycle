@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { compressImage } from '@/lib/images';
 
 export const PRODUCT_IMAGE_MAX_SIZE = 5 * 1024 * 1024;
 
@@ -13,14 +14,20 @@ export async function uploadProductImage(userId: string, file: File) {
     throw new Error('Ukuran foto produk maksimal 5 MB.');
   }
 
-  const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-  const path = `${userId}/product-${Date.now()}.${extension}`;
+  const { file: compressed } = await compressImage(file, {
+    maxWidth: 1600,
+    maxHeight: 1600,
+    quality: 0.82,
+    maxBytes: 1.2 * 1024 * 1024,
+  });
+
+  const path = `${userId}/product-${Date.now()}.jpg`;
 
   const { error: uploadError } = await supabase.storage
     .from('product-images')
-    .upload(path, file, {
+    .upload(path, compressed, {
       cacheControl: '3600',
-      contentType: file.type,
+      contentType: compressed.type,
       upsert: false,
     });
 

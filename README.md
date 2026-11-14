@@ -217,7 +217,14 @@ Buka SQL Editor Supabase lalu jalankan file berikut **sesuai urutan nama**:
 14. `supabase/migrations/20261109000300_marketplace_kondisi.sql`
 15. `supabase/migrations/20261109000400_rls_industri.sql`
 16. `supabase/migrations/20261109000500_rpc_industri.sql`
-17. `supabase/seed.sql` (khusus database baru)
+17. `supabase/migrations/20261109000600_rename_pengepul_to_industri.sql`
+18. `supabase/migrations/20261114000100_whatsapp_payment_proof.sql`
+19. `supabase/seed.sql` (khusus database baru)
+
+> Migrasi `20261114000100_whatsapp_payment_proof.sql` **wajib** diterapkan
+> sebelum memakai bukti pembayaran dan antrean WhatsApp. Tanpa migrasi itu,
+> unggah bukti akan gagal dengan pesan yang memandu. Notifikasi dalam aplikasi
+> tetap berjalan seperti biasa.
 
 Detail database, akun demo, dan keputusan RLS ada di
 [`supabase/README.md`](supabase/README.md).
@@ -249,6 +256,7 @@ Perintah lain:
 npm run typecheck   # TypeScript
 npm run build       # build produksi
 npm run preview     # pratinjau build
+npm run icons       # buat ulang ikon PWA PNG (public/icon-*.png)
 ```
 
 ## Deploy ke GitHub Pages
@@ -552,6 +560,61 @@ supabase/
     harus dialihkan ke dashboard.
 8. Jalankan `npm run typecheck` dan `npm run build` → keduanya harus lulus.
 
+## Pembaruan produksi: PWA, offline, WhatsApp, dan monitoring
+
+### Aplikasi dapat dipasang (PWA)
+
+- `public/manifest.webmanifest` menyediakan nama, warna tema, serta ikon 192,
+  512, dan maskable. Ikon PNG dibuat dengan `npm run icons`
+  (`scripts/generate-pwa-icons.mjs`) tanpa dependensi tambahan.
+- `public/sw.js` melakukan cache aset dan halaman. Navigasi memakai
+  *network-first* dengan fallback cache, sedangkan aset ber-hash memakai
+  *cache-first*.
+- Service worker hanya didaftarkan pada build produksi
+  (`src/lib/pwa.ts`) agar pengembangan tidak tersangkut cache lama.
+
+### Hemat kuota dan tahan offline
+
+- Foto setoran, produk, avatar, dan bukti pembayaran dikompres di perangkat
+  sebelum diunggah (`src/lib/images.ts`), sehingga unggahan lebih cepat di
+  jaringan lambat.
+- Bila koneksi terputus saat membuat setoran, data disimpan di IndexedDB
+  (`src/lib/offline-deposits.ts`) beserta foto terkompresi. Banner dan halaman
+  riwayat menampilkan antrean serta tombol **Kirim sekarang**. Pengiriman
+  otomatis dicoba saat perangkat kembali online.
+- Draft setoran tetap tersimpan 7 hari di localStorage.
+
+### Bukti pembayaran dua arah
+
+- BSU mengunggah bukti transfer setelah penimbangan dari halaman detail
+  setoran. Warga menerima notifikasi, melihat bukti, lalu memilih
+  **Pembayaran diterima** atau **Ada masalah** beserta alasannya.
+- Status konfirmasi tampil pada kartu bukti pembayaran di halaman detail.
+
+### Notifikasi WhatsApp (opsional)
+
+- Setiap setoran baru dan perubahan statusnya otomatis masuk ke tabel
+  `whatsapp_outbox` melalui trigger database. Notifikasi dalam aplikasi tetap
+  berjalan.
+- Edge Function `supabase/functions/whatsapp-dispatch` mengirim antrean ke
+  gateway WhatsApp Anda. Tanpa secret gateway, fungsi berhenti dengan aman dan
+  antrean tetap tersimpan.
+- Panduan deploy, kontrak gateway, dan penjadwalan cron ada di
+  [`supabase/functions/README.md`](supabase/functions/README.md).
+
+### Monitoring error
+
+- `src/lib/monitoring.ts` menangkap error global dan kegagalan React Query.
+- Isi `VITE_ERROR_REPORT_URL` untuk mengirim laporan JSON ke endpoint Anda.
+  Bila kosong, error hanya dicatat di console sehingga tidak menambah biaya.
+
+### Performa daftar
+
+- Riwayat setoran, antrean BSU, jadwal jemput, dan katalog produk memakai
+  pagination server-side 24–30 baris per halaman dengan tombol **Muat lebih
+  banyak**.
+- Seluruh halaman dimuat secara *lazy* sehingga bundle awal lebih kecil.
+
 ## Status tahap
 
 - ✅ Tahap 1 — database, RLS, RPC inti, seed
@@ -587,6 +650,16 @@ supabase/
   penulisan hanya di folder `{user_id}/`.
 - **Admin gagal mengubah status organisasi** — pastikan akun berperan `admin`
   dan policy `organizations_update_admin` sudah diterapkan.
+- **Bukti pembayaran gagal diunggah** — terapkan
+  `20261114000100_whatsapp_payment_proof.sql`; bucket privat `payment-proofs`
+  dan RPC `set_deposit_payment_proof`/`confirm_payment_received` dibuat oleh
+  migrasi tersebut.
+- **WhatsApp tidak terkirim** — pastikan Edge Function `whatsapp-dispatch`
+  sudah di-deploy, secret gateway terisi, dan cron memanggil fungsi secara
+  berkala. Periksa kolom `status`/`last_error` pada `whatsapp_outbox`.
+- **Halaman menampilkan versi lama setelah deploy** — service worker mungkin
+  menyajikan cache lama. Muat ulang sekali; cache otomatis dibersihkan saat
+  versi service worker berubah.
 - **Email konfirmasi tidak datang** — cek folder spam, batas rate limit email
   Supabase, dan pengaturan SMTP. Untuk pengujian, nonaktifkan konfirmasi email.
 - **Peta kosong** — pastikan organisasi seed sudah ada dan memiliki `lat`/`lng`,

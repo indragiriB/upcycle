@@ -24,6 +24,7 @@ import { useAuth } from '@/auth/AuthProvider';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { absoluteAppUrl } from '@/lib/paths';
 import { supabase } from '@/lib/supabase';
+import { compressImage } from '@/lib/images';
 import { authErrorMessage } from '@/lib/auth-errors';
 import { cn, formatDateShort, mapsUrl } from '@/lib/utils';
 import { ROLE_DESCRIPTIONS, ROLE_LABELS, ORG_TYPE_LABELS } from '@/lib/roles';
@@ -157,13 +158,18 @@ export function ProfilePage() {
 
     setUploading(true);
     try {
-      const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-      const path = `${profile.id}/avatar-${Date.now()}.${extension}`;
+      const { file: compressed } = await compressImage(file, {
+        maxWidth: 720,
+        maxHeight: 720,
+        quality: 0.85,
+        maxBytes: 400 * 1024,
+      });
+      const path = `${profile.id}/avatar-${Date.now()}.jpg`;
       const { error: uploadError } = await supabase.storage
         .from('avatars')
-        .upload(path, file, {
+        .upload(path, compressed, {
           cacheControl: '3600',
-          contentType: file.type,
+          contentType: compressed.type,
           upsert: true,
         });
 

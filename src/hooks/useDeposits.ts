@@ -1,6 +1,12 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { getDepositPhotoSignedUrl } from '@/lib/deposit-storage';
+import { getPaymentProofSignedUrl } from '@/lib/payment-proof';
 import type {
   DepositMethod,
   DepositRecord,
@@ -8,6 +14,8 @@ import type {
 } from '@/types/database';
 
 export const DEPOSITS_KEY = 'deposits';
+
+const DEPOSIT_PAGE_SIZE = 30;
 
 const DEPOSIT_SELECT = `
   *,
@@ -46,41 +54,53 @@ function readableError(error: { message: string } | null, fallback: string) {
   return new Error(error?.message || fallback);
 }
 
+// Pagination server-side: setiap halaman mengambil 30 baris memakai range().
+// Halaman UI memanggil fetchNextPage saat tombol "Muat lebih banyak" ditekan.
 export function useWargaDeposits(userId: string | undefined) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: [DEPOSITS_KEY, 'warga', userId],
     enabled: Boolean(userId),
     staleTime: 15_000,
-    queryFn: async () => {
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      const from = pageParam * DEPOSIT_PAGE_SIZE;
       const { data, error } = await supabase
         .from('deposits')
         .select(DEPOSIT_SELECT)
         .eq('warga_id', userId)
         .order('created_at', { ascending: false })
-        .limit(250);
+        .order('id', { ascending: false })
+        .range(from, from + DEPOSIT_PAGE_SIZE - 1);
 
       if (error) throw error;
       return (data ?? []) as unknown as DepositRecord[];
     },
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < DEPOSIT_PAGE_SIZE ? undefined : allPages.length,
   });
 }
 
 export function useBsuDeposits(orgId: string | null) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: [DEPOSITS_KEY, 'bsu', orgId],
     enabled: Boolean(orgId),
     staleTime: 15_000,
-    queryFn: async () => {
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      const from = pageParam * DEPOSIT_PAGE_SIZE;
       const { data, error } = await supabase
         .from('deposits')
         .select(DEPOSIT_SELECT)
         .eq('bsu_id', orgId)
         .order('created_at', { ascending: false })
-        .limit(400);
+        .order('id', { ascending: false })
+        .range(from, from + DEPOSIT_PAGE_SIZE - 1);
 
       if (error) throw error;
       return (data ?? []) as unknown as DepositRecord[];
     },
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < DEPOSIT_PAGE_SIZE ? undefined : allPages.length,
   });
 }
 
@@ -108,6 +128,66 @@ export function useDepositPhoto(path: string | null | undefined) {
     enabled: Boolean(path),
     staleTime: 45 * 60_000,
     queryFn: () => getDepositPhotoSignedUrl(path as string),
+  });
+}
+
+export function usePaymentProof(path: string | null | undefined) {
+  return useQuery({
+    queryKey: ['payment-proof', path],
+    enabled: Boolean(path),
+    staleTime: 45 * 60_000,
+    queryFn: () => getPaymentProofSignedUrl(path as string),
+  });
+}
+
+export function useSetPaymentProof() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: { depositId: string; path: string }) => {
+      const { error } = await supabase.rpc('set_deposit_payment_proof', {
+        p_deposit_id: input.depositId,
+        p_path: input.path,
+      });
+
+      if (error) throw readableError(error, 'Bukti pembayaran gagal disimpan.');
+    },
+    onSuccess: (_, variables) => {
+      void queryClient.invalidateQueries({ queryKey: [DEPOSITS_KEY] });
+      void queryClient.invalidateQueries({
+        queryKey: [DEPOSITS_KEY, 'detail', variables.depositId],
+      });
+      void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
+  });
+}
+
+export function useConfirmPaymentReceived() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (input: {
+      depositId: string;
+      terima: boolean;
+      alasan?: string | null;
+    }) => {
+      const { error } = await supabase.rpc('confirm_payment_received', {
+        p_deposit_id: input.depositId,
+        p_terima: input.terima,
+        p_alasan: input.alasan ?? null,
+      });
+
+      if (error) {
+        throw readableError(error, 'Konfirmasi pembayaran gagal disimpan.');
+      }
+    },
+    onSuccess: (_, variables) => {
+      void queryClient.invalidateQueries({ queryKey: [DEPOSITS_KEY] });
+      void queryClient.invalidateQueries({
+        queryKey: [DEPOSITS_KEY, 'detail', variables.depositId],
+      });
+      void queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    },
   });
 }
 

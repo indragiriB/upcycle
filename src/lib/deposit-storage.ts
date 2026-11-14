@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { compressImage } from '@/lib/images';
 
 const MAX_PHOTO_SIZE = 5 * 1024 * 1024;
 const ALLOWED_TYPES = ['image/jpeg', 'image/png', 'image/webp'];
@@ -21,13 +22,21 @@ export async function uploadDepositPhoto(
   const validation = validateDepositPhoto(file);
   if (validation) throw new Error(validation);
 
-  const extension = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-  const path = `${userId}/${depositId}/${Date.now()}.${extension}`;
+  // Foto dari kamera HP sering berukuran beberapa MB. Kompres dulu agar
+  // unggahan lebih cepat dan hemat kuota.
+  const { file: compressed } = await compressImage(file, {
+    maxWidth: 1600,
+    maxHeight: 1600,
+    quality: 0.82,
+    maxBytes: 1.2 * 1024 * 1024,
+  });
+
+  const path = `${userId}/${depositId}/${Date.now()}.jpg`;
   const { error } = await supabase.storage
     .from('deposit-photos')
-    .upload(path, file, {
+    .upload(path, compressed, {
       cacheControl: '3600',
-      contentType: file.type,
+      contentType: compressed.type,
       upsert: false,
     });
 

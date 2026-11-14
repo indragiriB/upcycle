@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { supabase } from '@/lib/supabase';
 import { toNumber } from '@/lib/utils';
 import type {
@@ -67,21 +72,28 @@ function invalidateProductData(queryClient: ReturnType<typeof useQueryClient>) {
   void queryClient.invalidateQueries({ queryKey: ['dashboard'] });
 }
 
+const CATALOG_PAGE_SIZE = 24;
+
 export function useCatalogProducts() {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: [PRODUCTS_KEY, 'catalog'],
     staleTime: 20_000,
-    queryFn: async () => {
+    initialPageParam: 0,
+    queryFn: async ({ pageParam }) => {
+      const from = pageParam * CATALOG_PAGE_SIZE;
       const { data, error } = await supabase
         .from('products')
         .select(PRODUCT_SELECT)
         .eq('status', 'aktif')
         .order('created_at', { ascending: false })
-        .limit(200);
+        .order('id', { ascending: false })
+        .range(from, from + CATALOG_PAGE_SIZE - 1);
 
       if (error) throw readableError(error, 'Produk marketplace gagal dimuat.');
       return ((data ?? []) as unknown as ProductRecord[]).map(normalizeProduct);
     },
+    getNextPageParam: (lastPage, allPages) =>
+      lastPage.length < CATALOG_PAGE_SIZE ? undefined : allPages.length,
   });
 }
 

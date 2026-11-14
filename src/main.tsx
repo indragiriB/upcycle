@@ -5,8 +5,13 @@ import { BrowserRouter } from 'react-router-dom';
 import { AuthProvider } from '@/auth/AuthProvider';
 import { AppErrorBoundary } from '@/components/AppErrorBoundary';
 import { queryClient } from '@/lib/query-client';
+import { initMonitoring } from '@/lib/monitoring';
+import { registerServiceWorker } from '@/lib/pwa';
 import App from '@/App';
 import '@/index.css';
+
+initMonitoring();
+registerServiceWorker();
 
 const rootElement = document.getElementById('root');
 

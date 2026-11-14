@@ -69,7 +69,10 @@ export function DepositQueuePage() {
   usePageTitle('Antrean setoran');
 
   const depositsQuery = useBsuDeposits(profile?.org_id ?? null);
-  const rows = depositsQuery.data ?? [];
+  const rows = useMemo(
+    () => depositsQuery.data?.pages.flat() ?? [],
+    [depositsQuery.data],
+  );
 
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -138,7 +141,7 @@ export function DepositQueuePage() {
       label: 'Total setoran',
       value: rows.length,
       format: 'number',
-      hint: 'Sepanjang waktu',
+      hint: 'Dari data termuat',
     },
   ];
 
@@ -333,6 +336,20 @@ export function DepositQueuePage() {
                   />
                 );
               })}
+            </div>
+          )}
+
+          {depositsQuery.hasNextPage && (
+            <div className="mt-3 flex justify-center">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void depositsQuery.fetchNextPage()}
+                loading={depositsQuery.isFetchingNextPage}
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Muat lebih banyak
+              </Button>
             </div>
           )}
         </div>

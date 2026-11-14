@@ -1,48 +1,154 @@
+import { lazy, Suspense } from 'react';
 import { Navigate, Route, Routes } from 'react-router-dom';
 import { isSupabaseConfigured } from '@/lib/supabase';
 import { AppShell } from '@/components/layout/AppShell';
+import { PageLoader } from '@/components/ui/PageLoader';
 import {
   ProtectedRoute,
   PublicOnlyRoute,
   RoleGate,
   RootRedirect,
 } from '@/routes/guards';
-import { LoginPage } from '@/pages/auth/LoginPage';
-import { RegisterPage } from '@/pages/auth/RegisterPage';
-import { ForgotPasswordPage } from '@/pages/auth/ForgotPasswordPage';
-import { ResetPasswordPage } from '@/pages/auth/ResetPasswordPage';
-import { DashboardPage } from '@/pages/DashboardPage';
-import { ProfilePage } from '@/pages/ProfilePage';
 import { NotFoundPage } from '@/pages/NotFoundPage';
 import { SetupRequiredPage } from '@/pages/SetupRequiredPage';
-import { DepositFormPage } from '@/pages/warga/DepositFormPage';
-import { WastePricesPage } from '@/pages/warga/WastePricesPage';
-import { DepositHistoryPage } from '@/pages/warga/DepositHistoryPage';
-import { DepositQueuePage } from '@/pages/bsu/DepositQueuePage';
-import { PickupSchedulePage } from '@/pages/bsu/PickupSchedulePage';
-import { PricingPage } from '@/pages/bsu/PricingPage';
-import { CashBookPage } from '@/pages/bsu/CashBookPage';
-import { DepositDetailPage } from '@/pages/deposits/DepositDetailPage';
-import { IncomingDepositsPage } from '@/pages/bsi/IncomingDepositsPage';
-import { IncomingDepositDetailPage } from '@/pages/bsi/IncomingDepositDetailPage';
-import { StockPage as BsiStockPage } from '@/pages/bsi/StockPage';
-import { BsiOrdersPage } from '@/pages/bsi/OrdersPage';
-import { IndustriStockPage } from '@/pages/industri/StockCatalogPage';
-import { IndustriOrdersPage } from '@/pages/industri/OrdersPage';
-import { MarketplacePage } from '@/pages/MarketplacePage';
-import { ProductManagementPage } from '@/pages/products/ProductManagementPage';
-import { WargaOrdersPage } from '@/pages/products/WargaOrdersPage';
-import { WasteTypesPage } from '@/pages/admin/WasteTypesPage';
-import { OrganizationVerificationPage } from '@/pages/admin/OrganizationVerificationPage';
-import { UsersPage } from '@/pages/admin/UsersPage';
 
-export default function App() {
-  if (!isSupabaseConfigured) {
-    return <SetupRequiredPage />;
-  }
+// Halaman dimuat terpisah agar bundle awal tetap ringan. Pengguna di jaringan
+// lambat hanya mengunduh halaman yang benar-benar dibuka.
+const LoginPage = lazy(() =>
+  import('@/pages/auth/LoginPage').then((module) => ({
+    default: module.LoginPage,
+  })),
+);
+const RegisterPage = lazy(() =>
+  import('@/pages/auth/RegisterPage').then((module) => ({
+    default: module.RegisterPage,
+  })),
+);
+const ForgotPasswordPage = lazy(() =>
+  import('@/pages/auth/ForgotPasswordPage').then((module) => ({
+    default: module.ForgotPasswordPage,
+  })),
+);
+const ResetPasswordPage = lazy(() =>
+  import('@/pages/auth/ResetPasswordPage').then((module) => ({
+    default: module.ResetPasswordPage,
+  })),
+);
+const DashboardPage = lazy(() =>
+  import('@/pages/DashboardPage').then((module) => ({
+    default: module.DashboardPage,
+  })),
+);
+const ProfilePage = lazy(() =>
+  import('@/pages/ProfilePage').then((module) => ({
+    default: module.ProfilePage,
+  })),
+);
+const DepositFormPage = lazy(() =>
+  import('@/pages/warga/DepositFormPage').then((module) => ({
+    default: module.DepositFormPage,
+  })),
+);
+const WastePricesPage = lazy(() =>
+  import('@/pages/warga/WastePricesPage').then((module) => ({
+    default: module.WastePricesPage,
+  })),
+);
+const DepositHistoryPage = lazy(() =>
+  import('@/pages/warga/DepositHistoryPage').then((module) => ({
+    default: module.DepositHistoryPage,
+  })),
+);
+const DepositQueuePage = lazy(() =>
+  import('@/pages/bsu/DepositQueuePage').then((module) => ({
+    default: module.DepositQueuePage,
+  })),
+);
+const PickupSchedulePage = lazy(() =>
+  import('@/pages/bsu/PickupSchedulePage').then((module) => ({
+    default: module.PickupSchedulePage,
+  })),
+);
+const PricingPage = lazy(() =>
+  import('@/pages/bsu/PricingPage').then((module) => ({
+    default: module.PricingPage,
+  })),
+);
+const CashBookPage = lazy(() =>
+  import('@/pages/bsu/CashBookPage').then((module) => ({
+    default: module.CashBookPage,
+  })),
+);
+const DepositDetailPage = lazy(() =>
+  import('@/pages/deposits/DepositDetailPage').then((module) => ({
+    default: module.DepositDetailPage,
+  })),
+);
+const IncomingDepositsPage = lazy(() =>
+  import('@/pages/bsi/IncomingDepositsPage').then((module) => ({
+    default: module.IncomingDepositsPage,
+  })),
+);
+const IncomingDepositDetailPage = lazy(() =>
+  import('@/pages/bsi/IncomingDepositDetailPage').then((module) => ({
+    default: module.IncomingDepositDetailPage,
+  })),
+);
+const BsiStockPage = lazy(() =>
+  import('@/pages/bsi/StockPage').then((module) => ({
+    default: module.StockPage,
+  })),
+);
+const BsiOrdersPage = lazy(() =>
+  import('@/pages/bsi/OrdersPage').then((module) => ({
+    default: module.BsiOrdersPage,
+  })),
+);
+const IndustriStockPage = lazy(() =>
+  import('@/pages/industri/StockCatalogPage').then((module) => ({
+    default: module.IndustriStockPage,
+  })),
+);
+const IndustriOrdersPage = lazy(() =>
+  import('@/pages/industri/OrdersPage').then((module) => ({
+    default: module.IndustriOrdersPage,
+  })),
+);
+const MarketplacePage = lazy(() =>
+  import('@/pages/MarketplacePage').then((module) => ({
+    default: module.MarketplacePage,
+  })),
+);
+const ProductManagementPage = lazy(() =>
+  import('@/pages/products/ProductManagementPage').then((module) => ({
+    default: module.ProductManagementPage,
+  })),
+);
+const WargaOrdersPage = lazy(() =>
+  import('@/pages/products/WargaOrdersPage').then((module) => ({
+    default: module.WargaOrdersPage,
+  })),
+);
+const WasteTypesPage = lazy(() =>
+  import('@/pages/admin/WasteTypesPage').then((module) => ({
+    default: module.WasteTypesPage,
+  })),
+);
+const OrganizationVerificationPage = lazy(() =>
+  import('@/pages/admin/OrganizationVerificationPage').then((module) => ({
+    default: module.OrganizationVerificationPage,
+  })),
+);
+const UsersPage = lazy(() =>
+  import('@/pages/admin/UsersPage').then((module) => ({
+    default: module.UsersPage,
+  })),
+);
 
+function AppRoutes() {
   return (
-    <Routes>
+    <Suspense fallback={<PageLoader />}>
+      <Routes>
       <Route path="/" element={<RootRedirect />} />
 
       <Route element={<PublicOnlyRoute />}>
@@ -266,6 +372,15 @@ export default function App() {
       </Route>
 
       <Route path="*" element={<NotFoundPage />} />
-    </Routes>
+      </Routes>
+    </Suspense>
   );
+}
+
+export default function App() {
+  if (!isSupabaseConfigured) {
+    return <SetupRequiredPage />;
+  }
+
+  return <AppRoutes />;
 }

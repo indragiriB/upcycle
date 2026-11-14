@@ -1,0 +1,39 @@
+{
+  "name": "UPCYCLE — Ekonomi Sampah yang Lebih Baik",
+  "short_name": "UPCYCLE",
+  "description": "Platform bank sampah, BSI, industri, dan marketplace daur ulang.",
+  "lang": "id",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#f8faf7",
+  "theme_color": "#22C55E",
+  "categories": ["business", "shopping", "utilities"],
+  "icons": [
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "upcycle-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ]
+}

@@ -42,6 +42,11 @@ import {
   saveDepositDraft,
 } from '@/lib/deposit-draft';
 import { isValidWhatsApp, normalizedWhatsApp } from '@/lib/deposits';
+import { compressImageToDataUrl } from '@/lib/images';
+import {
+  enqueueOfflineDeposit,
+  isOfflineError,
+} from '@/lib/offline-deposits';
 import {
   formatCurrency,
   formatNumber,
@@ -303,7 +308,41 @@ export function DepositFormPage() {
     const depositId = crypto.randomUUID();
     let uploadedPath: string | null = null;
 
+    const queueForLater = async (reason: string) => {
+      const photoDataUrl = photo
+        ? await compressImageToDataUrl(photo, { maxBytes: 380 * 1024 })
+        : null;
+
+      await enqueueOfflineDeposit({
+        id: depositId,
+        userId: profile.id,
+        bsuId,
+        metode,
+        nomorWa: normalizedWhatsApp(nomorWa),
+        lokasiUrl: lokasiUrl.trim() || null,
+        lat,
+        lng,
+        alamat: alamat.trim() || null,
+        estimasiJenis: selectedWaste.nama,
+        estimasiBeratKg: Number(weight.toFixed(2)),
+        catatan: catatan.trim() || null,
+        photoDataUrl,
+      });
+
+      clearDepositDraft(profile.id);
+      rememberWhatsApp(profile.id, normalizedWhatsApp(nomorWa));
+      navigate('/warga/riwayat', {
+        replace: true,
+        state: { queued: true, reason },
+      });
+    };
+
     try {
+      if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+        await queueForLater('offline');
+        return;
+      }
+
       if (photo) {
         uploadedPath = await uploadDepositPhoto(profile.id, depositId, photo);
       }
@@ -325,7 +364,13 @@ export function DepositFormPage() {
           fotoUrl: uploadedPath,
         });
       } catch (failure) {
-        if (uploadedPath) await removeDepositPhoto(uploadedPath);
+        if (uploadedPath) {
+          try {
+            await removeDepositPhoto(uploadedPath);
+          } catch {
+            // Abaikan kegagalan pembersihan; setoran tetap disimpan offline.
+          }
+        }
         throw failure;
       }
 
@@ -336,6 +381,20 @@ export function DepositFormPage() {
       clearDepositDraft(profile.id);
       rememberWhatsApp(profile.id, normalizedWhatsApp(nomorWa));
     } catch (failure) {
+      if (isOfflineError(failure)) {
+        try {
+          await queueForLater('network');
+          return;
+        } catch (queueFailure) {
+          setError(
+            queueFailure instanceof Error
+              ? queueFailure.message
+              : 'Setoran offline gagal disimpan. Coba lagi.',
+          );
+          return;
+        }
+      }
+
       setError(
         failure instanceof Error
           ? failure.message

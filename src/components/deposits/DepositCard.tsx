@@ -1,13 +1,16 @@
 import type { ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import {
+  AlertTriangle,
   CalendarClock,
+  CheckCircle2,
   ChevronRight,
   MapPin,
   Recycle,
   Scale,
   Store,
   Truck,
+  Wallet,
 } from 'lucide-react';
 import { DepositStatusBadge } from '@/components/deposits/DepositStatusBadge';
 import { depositWeight } from '@/lib/deposits';
@@ -78,6 +81,23 @@ export function DepositCard({
                     {formatDateTime(deposit.jadwal)}
                   </span>
                 )}
+                {deposit.bukti_bayar_url &&
+                  (deposit.pembayaran_diterima_at ? (
+                    <span className="inline-flex items-center gap-1 font-semibold text-brand-700">
+                      <CheckCircle2 className="h-3 w-3" />
+                      Pembayaran diterima
+                    </span>
+                  ) : deposit.pembayaran_ditolak_at ? (
+                    <span className="inline-flex items-center gap-1 font-semibold text-amber-700">
+                      <AlertTriangle className="h-3 w-3" />
+                      Masalah pembayaran
+                    </span>
+                  ) : (
+                    <span className="inline-flex items-center gap-1 font-semibold text-sky-700">
+                      <Wallet className="h-3 w-3" />
+                      Bukti terunggah
+                    </span>
+                  ))}
               </span>
             </span>
             <DepositStatusBadge

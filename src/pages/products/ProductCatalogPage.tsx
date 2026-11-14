@@ -51,7 +51,10 @@ export function ProductCatalogPage({
   );
 
   const productsQuery = useCatalogProducts();
-  const products = productsQuery.data ?? [];
+  const products = useMemo(
+    () => productsQuery.data?.pages.flat() ?? [],
+    [productsQuery.data],
+  );
 
   const categories = useMemo(() => {
     const unique = new Set(
@@ -330,6 +333,20 @@ export function ProductCatalogPage({
                   onBuy={setSelectedProduct}
                 />
               ))}
+            </div>
+          )}
+
+          {productsQuery.hasNextPage && (
+            <div className="mt-3 flex justify-center">
+              <Button
+                variant="secondary"
+                size="sm"
+                onClick={() => void productsQuery.fetchNextPage()}
+                loading={productsQuery.isFetchingNextPage}
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Muat lebih banyak
+              </Button>
             </div>
           )}
         </div>

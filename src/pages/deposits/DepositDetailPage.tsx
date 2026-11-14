@@ -1,10 +1,11 @@
-import { useState } from 'react';
+import { useRef, useState, type ChangeEvent } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
 import {
   AlertTriangle,
   ArrowRight,
   Building2,
   CalendarClock,
+  Camera,
   Check,
   Circle,
   Clock3,
@@ -28,11 +29,15 @@ import { useAuth } from '@/auth/AuthProvider';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import {
   useConfirmDeposit,
+  useConfirmPaymentReceived,
   useDepositDetail,
   useDepositPhoto,
+  usePaymentProof,
   useSendDepositToBsi,
+  useSetPaymentProof,
 } from '@/hooks/useDeposits';
 import { useOrganizationById } from '@/hooks/useOrganizations';
+import { uploadPaymentProof, validatePaymentProof } from '@/lib/payment-proof';
 import {
   bsuDepositAction,
   depositTimeline,
@@ -254,6 +259,286 @@ function CounterpartCard({
           <MapPin className="h-3 w-3" />
           Lihat lokasi BSU
         </a>
+      )}
+    </Card>
+  );
+}
+
+const PAYMENT_PROOF_STATUSES: DepositRecord['status'][] = [
+  'dicek_dibayar',
+  'dikonfirmasi',
+  'dikirim_ke_bsi',
+  'dipublikasikan',
+  'dibeli_industri',
+  'diambil_bsi',
+  'diambil_industri',
+];
+
+function PaymentProofCard({
+  viewer,
+  deposit,
+}: {
+  viewer: 'warga' | 'bsu';
+  deposit: DepositRecord;
+}) {
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState<{
+    type: 'success' | 'error';
+    text: string;
+  } | null>(null);
+  const [disputeOpen, setDisputeOpen] = useState(false);
+  const [reason, setReason] = useState('');
+
+  const proofQuery = usePaymentProof(deposit.bukti_bayar_url);
+  const setProof = useSetPaymentProof();
+  const confirmPayment = useConfirmPaymentReceived();
+
+  const eligible = PAYMENT_PROOF_STATUSES.includes(deposit.status);
+  const hasProof = Boolean(deposit.bukti_bayar_url);
+
+  if (!eligible) return null;
+  if (viewer === 'warga' && !hasProof) return null;
+
+  const handlePickProof = async (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = '';
+    if (!file) return;
+
+    const validation = validatePaymentProof(file);
+    if (validation) {
+      setMessage({ type: 'error', text: validation });
+      return;
+    }
+
+    setMessage(null);
+    setUploading(true);
+    try {
+      const path = await uploadPaymentProof(deposit.id, file, 'bsu');
+      await setProof.mutateAsync({ depositId: deposit.id, path });
+      setMessage({
+        type: 'success',
+        text: 'Bukti pembayaran berhasil diunggah. Warga akan menerima notifikasi untuk mengonfirmasi.',
+      });
+    } catch (failure) {
+      setMessage({
+        type: 'error',
+        text:
+          failure instanceof Error
+            ? failure.message
+            : 'Bukti pembayaran gagal diunggah.',
+      });
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const handleConfirmPayment = async (terima: boolean) => {
+    if (!terima && !reason.trim()) {
+      setMessage({
+        type: 'error',
+        text: 'Tuliskan alasan masalah pembayaran terlebih dahulu.',
+      });
+      return;
+    }
+
+    setMessage(null);
+    try {
+      await confirmPayment.mutateAsync({
+        depositId: deposit.id,
+        terima,
+        alasan: terima ? null : reason.trim(),
+      });
+      setDisputeOpen(false);
+      setReason('');
+      setMessage({
+        type: 'success',
+        text: terima
+          ? 'Terima kasih. Konfirmasi pembayaran sudah dikirim ke BSU.'
+          : 'Laporan masalah sudah dikirim ke BSU. Mereka akan menghubungimu.',
+      });
+    } catch (failure) {
+      setMessage({
+        type: 'error',
+        text:
+          failure instanceof Error
+            ? failure.message
+            : 'Konfirmasi pembayaran gagal disimpan.',
+      });
+    }
+  };
+
+  const received = Boolean(deposit.pembayaran_diterima_at);
+  const disputed = Boolean(deposit.pembayaran_ditolak_at);
+
+  return (
+    <Card className="p-4 md:p-5">
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex items-start gap-2.5">
+          <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-brand-50 text-brand-700">
+            <Wallet className="h-[18px] w-[18px]" />
+          </span>
+          <div>
+            <h2 className="text-sm font-bold text-ink">Bukti pembayaran</h2>
+            <p className="mt-0.5 text-[10px] leading-4 text-muted">
+              {viewer === 'bsu'
+                ? 'Unggah bukti transfer agar warga dapat mengonfirmasi pembayaran.'
+                : 'Periksa bukti pembayaran dari BSU, lalu konfirmasi.'}
+            </p>
+          </div>
+        </div>
+        {viewer === 'bsu' && (
+          <>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/jpeg,image/png,image/webp"
+              className="hidden"
+              onChange={(event) => void handlePickProof(event)}
+            />
+            <Button
+              size="sm"
+              variant={hasProof ? 'secondary' : 'primary'}
+              loading={uploading || setProof.isPending}
+              onClick={() => fileInputRef.current?.click()}
+            >
+              <Camera className="h-3.5 w-3.5" />
+              {hasProof ? 'Ganti bukti' : 'Unggah bukti'}
+            </Button>
+          </>
+        )}
+      </div>
+
+      {message && (
+        <p
+          className={`mt-3 rounded-xl border px-3 py-2.5 text-[10px] leading-4 ${
+            message.type === 'success'
+              ? 'border-brand-100 bg-brand-50 text-brand-900'
+              : 'border-red-100 bg-red-50 text-red-700'
+          }`}
+        >
+          {message.text}
+        </p>
+      )}
+
+      {hasProof ? (
+        <div className="mt-3 overflow-hidden rounded-2xl border border-black/[0.05] bg-[#f8faf7]">
+          {proofQuery.isLoading && (
+            <Skeleton className="h-48 w-full rounded-none" />
+          )}
+          {proofQuery.isError && (
+            <p className="px-4 py-8 text-center text-[11px] leading-5 text-muted">
+              Bukti pembayaran tidak bisa dibuka. Pastikan migrasi storage
+              terbaru sudah diterapkan.
+            </p>
+          )}
+          {proofQuery.data && (
+            <a
+              href={proofQuery.data}
+              target="_blank"
+              rel="noreferrer"
+              className="block"
+            >
+              <img
+                src={proofQuery.data}
+                alt={`Bukti pembayaran setoran ${deposit.estimasi_jenis}`}
+                className="max-h-[360px] w-full object-contain"
+              />
+            </a>
+          )}
+        </div>
+      ) : (
+        <div className="mt-3 flex items-center gap-2.5 rounded-2xl border border-dashed border-black/[0.08] bg-[#f8faf7] px-4 py-5">
+          <ImageIcon className="h-5 w-5 shrink-0 text-muted" />
+          <p className="text-[10px] leading-4 text-muted">
+            Belum ada bukti pembayaran. Unggah foto struk atau tangkapan layar
+            transfer setelah setoran ditimbang.
+          </p>
+        </div>
+      )}
+
+      <div className="mt-3 rounded-2xl bg-[#f8faf7] px-3.5 py-3 text-[10px] leading-4">
+        {received ? (
+          <p className="flex items-start gap-2 font-semibold text-brand-800">
+            <Check className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            Warga mengonfirmasi pembayaran diterima
+            {deposit.pembayaran_diterima_at
+              ? ` pada ${formatDateTime(deposit.pembayaran_diterima_at)}`
+              : ''}
+            .
+          </p>
+        ) : disputed ? (
+          <p className="flex items-start gap-2 font-semibold text-amber-800">
+            <AlertTriangle className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            Warga melaporkan masalah
+            {deposit.alasan_bayar_ditolak
+              ? `: ${deposit.alasan_bayar_ditolak}`
+              : '.'}
+          </p>
+        ) : hasProof ? (
+          <p className="flex items-start gap-2 text-muted">
+            <Clock3 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            {viewer === 'bsu'
+              ? 'Menunggu warga mengonfirmasi pembayaran diterima.'
+              : 'Konfirmasi apakah pembayaran sudah kamu terima.'}
+          </p>
+        ) : (
+          <p className="flex items-start gap-2 text-muted">
+            <Clock3 className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+            Bukti pembayaran diunggah BSU setelah penimbangan.
+          </p>
+        )}
+      </div>
+
+      {viewer === 'warga' && hasProof && !received && (
+        <div className="mt-3 space-y-2">
+          <div className="flex flex-wrap gap-2">
+            <Button
+              size="sm"
+              onClick={() => void handleConfirmPayment(true)}
+              loading={confirmPayment.isPending && !disputeOpen}
+            >
+              <Check className="h-3.5 w-3.5" />
+              Pembayaran diterima
+            </Button>
+            <Button
+              size="sm"
+              variant="secondary"
+              onClick={() => setDisputeOpen((open) => !open)}
+            >
+              <AlertTriangle className="h-3.5 w-3.5" />
+              Ada masalah
+            </Button>
+          </div>
+
+          {disputeOpen && (
+            <div className="space-y-2 rounded-2xl border border-amber-200 bg-amber-50/60 p-3">
+              <label
+                htmlFor="alasan-bayar"
+                className="text-[10px] font-bold text-amber-900"
+              >
+                Apa masalahnya?
+              </label>
+              <textarea
+                id="alasan-bayar"
+                value={reason}
+                onChange={(event) => setReason(event.target.value)}
+                rows={3}
+                placeholder="Contoh: nominal transfer tidak sesuai atau bukti bukan untuk setoran ini."
+                className="w-full rounded-xl border border-amber-200 bg-white px-3 py-2 text-[11px] leading-5 text-ink outline-none focus:border-amber-400"
+              />
+              <Button
+                size="sm"
+                variant="secondary"
+                onClick={() => void handleConfirmPayment(false)}
+                loading={confirmPayment.isPending && disputeOpen}
+              >
+                <Send className="h-3.5 w-3.5" />
+                Kirim laporan
+              </Button>
+            </div>
+          )}
+        </div>
       )}
     </Card>
   );
@@ -718,6 +1003,8 @@ export function DepositDetailPage({ viewer }: { viewer: 'warga' | 'bsu' }) {
                 </div>
               </Card>
             )}
+
+          <PaymentProofCard viewer={viewer} deposit={deposit} />
 
           <Card className="p-4 md:p-5">
             <div className="flex items-center gap-2.5">

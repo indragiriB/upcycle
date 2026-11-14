@@ -1,5 +1,6 @@
 import { Component, type ErrorInfo, type ReactNode } from 'react';
 import { withBase } from '@/lib/paths';
+import { captureError } from '@/lib/monitoring';
 import { AlertTriangle, RefreshCw } from 'lucide-react';
 
 export class AppErrorBoundary extends Component<
@@ -13,7 +14,10 @@ export class AppErrorBoundary extends Component<
   }
 
   componentDidCatch(error: Error, errorInfo: ErrorInfo) {
-    console.error('UPCYCLE render error:', error, errorInfo);
+    captureError(error, {
+      source: 'react-error-boundary',
+      componentStack: errorInfo.componentStack,
+    });
   }
 
   render() {

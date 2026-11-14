@@ -25,7 +25,8 @@ Jalankan **berurutan** di SQL Editor Supabase (atau lewat Supabase CLI):
 | 15 | `migrations/20261109000400_rls_industri.sql` | policy RLS untuk peran dan organisasi industri |
 | 16 | `migrations/20261109000500_rpc_industri.sql` | RPC pesanan/stok/produk versi peran warga & industri |
 | 17 | `migrations/20261109000600_rename_pengepul_to_industri.sql` | rename kolom/enum/fungsi/RPC internal `pengepul` → `industri` |
-| 18 | `seed.sql` | data contoh dan akun demo |
+| 18 | `migrations/20261114000100_whatsapp_payment_proof.sql` | kolom bukti pembayaran, RPC konfirmasi, tabel & trigger `whatsapp_outbox`, bucket `payment-proofs` |
+| 19 | `seed.sql` | data contoh dan akun demo |
 
 > `seed.sql` hanya untuk database baru/kosong. Menjalankannya ulang dapat
 > menabrak constraint unik akun/auth.
@@ -233,6 +234,33 @@ Catatan perilaku:
   setoran, harga, dan stok lama tetap valid.
 - Tidak ada service-role key di frontend; seluruh aksi admin tetap melalui RLS.
 
+## Bukti pembayaran & antrean WhatsApp (migrasi 18)
+
+Migrasi `20261114000100_whatsapp_payment_proof.sql` menambahkan:
+
+| Objek | Fungsi |
+| --- | --- |
+| `deposits.bukti_bayar_url`, `bukti_bayar_at` | path dan waktu unggah bukti oleh BSU |
+| `deposits.pembayaran_diterima_at` | waktu warga mengonfirmasi pembayaran diterima |
+| `deposits.pembayaran_ditolak_at`, `alasan_bayar_ditolak` | laporan masalah pembayaran dari warga |
+| `set_deposit_payment_proof(uuid, text)` | RPC BSU menyimpan path bukti setelah penimbangan |
+| `confirm_payment_received(uuid, boolean, text)` | RPC warga menerima/melaporkan masalah |
+| `whatsapp_outbox` | antrean pesan WhatsApp yang ditulis trigger |
+| `enqueue_whatsapp_message(...)` | helper internal trigger (tidak dapat dipanggil klien) |
+| `queue_deposit_whatsapp()` + trigger | mengisi outbox saat setoran baru/berubah status |
+| bucket `payment-proofs` | privat, path `{deposit_id}/{berkas}` |
+
+Catatan:
+
+- `whatsapp_outbox` hanya dapat dibaca admin. Penulisan dilakukan trigger
+  `SECURITY DEFINER`, sehingga klien tidak dapat memalsukan pesan.
+- Pengiriman dilakukan Edge Function `whatsapp-dispatch` memakai service role.
+  Tanpa gateway, antrean tetap tersimpan dan tidak mengganggu aplikasi.
+- Retry maksimal 5 kali dengan jeda bertambah; setelah itu status menjadi
+  `failed`.
+- Policy `payment-proofs` mengizinkan warga pemilik setoran, BSU tujuan, dan
+  admin membaca berkas. Unggah oleh warga/BSU, hapus oleh BSU/admin.
+
 ## Cek setelah migrasi
 
 Jalankan di SQL Editor:
@@ -253,6 +281,14 @@ select p.nama, p.role, o.nama as organisasi
 from public.profiles p
 left join public.organizations o on o.id = p.org_id
 order by p.role, p.nama;
+
+-- Migrasi bukti pembayaran & WhatsApp sudah ada
+select column_name
+from information_schema.columns
+where table_schema = 'public' and table_name = 'deposits'
+  and column_name in ('bukti_bayar_url', 'pembayaran_diterima_at', 'alasan_bayar_ditolak');
+select count(*) as antrean_pending
+from public.whatsapp_outbox where status = 'pending';
 
 -- RPC Tahap 4 harus ada
 select proname
