@@ -8,12 +8,14 @@ import {
   History,
   RefreshCw,
   Search,
+  Trash2,
   X,
 } from 'lucide-react';
 import { useAuth } from '@/auth/AuthProvider';
 import { usePageTitle } from '@/hooks/usePageTitle';
 import { useWargaDeposits } from '@/hooks/useDeposits';
 import { useOfflineDeposits } from '@/hooks/useOfflineDeposits';
+import { removeOfflineDeposit } from '@/lib/offline-deposits';
 import { useVerifiedBsuOrganizations } from '@/hooks/useOrganizations';
 import {
   depositWeight,
@@ -56,6 +58,7 @@ export function DepositHistoryPage() {
   const [queuedNotice, setQueuedNotice] = useState(
     Boolean((location.state as { queued?: boolean } | null)?.queued),
   );
+  const [discardingId, setDiscardingId] = useState<string | null>(null);
 
   usePageTitle('Riwayat setoran');
 
@@ -71,6 +74,18 @@ export function DepositHistoryPage() {
     () => new Map((bsuQuery.data ?? []).map((org) => [org.id, org])),
     [bsuQuery.data],
   );
+
+  const handleDiscard = async (id: string) => {
+    setDiscardingId(id);
+    try {
+      await removeOfflineDeposit(id);
+      await offlineQueue.refresh();
+    } catch {
+      // Bila gagal, item tetap tampil agar pengguna dapat mencoba lagi.
+    } finally {
+      setDiscardingId(null);
+    }
+  };
 
   const filtered = useMemo(() => {
     const keyword = search.trim().toLowerCase();
@@ -220,8 +235,20 @@ export function DepositHistoryPage() {
                     </p>
                   )}
                 </div>
-                <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-semibold text-amber-800">
-                  Belum terkirim
+                <span className="flex shrink-0 items-center gap-1.5">
+                  <span className="rounded-full bg-amber-100 px-2 py-0.5 text-[9px] font-semibold text-amber-800">
+                    Belum terkirim
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => void handleDiscard(item.id)}
+                    disabled={discardingId === item.id}
+                    aria-label={`Hapus setoran ${item.estimasiJenis} dari antrean`}
+                    title="Hapus dari antrean"
+                    className="flex h-6 w-6 items-center justify-center rounded-full text-amber-700 transition-colors hover:bg-amber-100 disabled:opacity-50"
+                  >
+                    <Trash2 className="h-3.5 w-3.5" />
+                  </button>
                 </span>
               </div>
             ))}
